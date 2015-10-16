@@ -170,36 +170,40 @@ Public Class TranslationDataBase
   End Sub
 
   ''' <summary>
-  ''' 翻訳ファイル読込
+  ''' ModuleManager用のcfgファイル読込
   ''' </summary>
   ''' <param name="filename"></param>
   Public Function ImportTranslationFile(filename As String) As Integer
 
-    Dim rPart As New System.Text.RegularExpressions.Regex(
-          "^@PART\[(.+)\]$",
-          System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-
-    Dim rDescription As New System.Text.RegularExpressions.Regex(
-            "^{@description\s*=\s*([^}]*)}$",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase)
-
-    Dim mc As System.Text.RegularExpressions.MatchCollection
-
-
-    Dim importCount As Integer = 0
 
     Try
-      Me.IsChange = False
+      Dim importCount As Integer = 0
 
-      Dim check As New Hashtable
 
       '翻訳DB読込
       Me.LoadDatabse()
 
+      Dim rPart As New System.Text.RegularExpressions.Regex(
+            "^@PART\s*\[([^\}]+)\]",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+
+      Dim rDescription As New System.Text.RegularExpressions.Regex(
+              "@description\s*=\s*([^}]+)($|})",
+              System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+
+      Dim mc As System.Text.RegularExpressions.MatchCollection
+      Dim part As String = ""
+      Dim description As String = ""
+      Dim check As New Hashtable
+
+      Me.IsChange = False
+
+      '各cfgファイルの解析だが、良い方法ないので、強引に解析する
       Using sr As New System.IO.StreamReader(filename, System.Text.Encoding.GetEncoding("UTF-16"))
 
-        Dim part As String = ""
-        Dim description As String = ""
+        Dim nestLevel As Integer = 0
+        Dim isPart As Boolean = False 'Partの中
+        Dim isPartEnter As Boolean = False 'partの中に入った
 
         While sr.Peek() > -1
           Dim line As String = sr.ReadLine()
@@ -214,7 +218,6 @@ Public Class TranslationDataBase
           End If
 
           If line.Equals("") Then
-            '空行は次へ
             Continue While
           End If
 
@@ -222,23 +225,39 @@ Public Class TranslationDataBase
           mc = rPart.Matches(line)
           If mc.Count >= 1 Then
             part = mc(0).Groups(1).Value
-            Continue While '次へ
+            If Not isPart AndAlso nestLevel = 0 AndAlso Not part.Equals("") Then
+              'PARTの中に入った
+              isPart = True
+              isPartEnter = False
+            End If
           End If
 
-          '@description
-          If Not part.Equals("") AndAlso Not check.ContainsKey(part) Then
-            check.Add(part, 1) '同じ名前のものは取り込まない
+          '括弧のネスト判定
+          For i As Integer = 0 To line.Length - 1
+            If line.Substring(i, 1).Equals("{") Then
+              nestLevel += 1
+            End If
+          Next
+
+
+          'descriptionの取得
+          If isPart AndAlso nestLevel = 1 Then
+            isPartEnter = True 'partの中に入った
+
             mc = rDescription.Matches(line)
             If mc.Count >= 1 Then
               description = mc(0).Groups(1).Value.Trim()
-              If Not description.Equals("") Then
+
+
+              If Not part.Equals("") AndAlso Not check.ContainsKey(part) Then
+                check.Add(part, 1) '同じ名前のものは取り込まない
+
                 Dim selectRow() As DataRow = Me.TranslationDataTable.Select("パーツ名='" & Me.DoubleSiglQrt(part) & "'")
                 If selectRow.Count > 0 Then
                   For i As Integer = 0 To selectRow.Count - 1
-
                     '加工
                     If description.Substring(0, 1).Equals("""") _
-                      AndAlso description.Substring(description.Length - 1, 1).Equals("""") Then
+                        AndAlso description.Substring(description.Length - 1, 1).Equals("""") Then
                       description = description.Substring(1, description.Length - 2)
                     End If
                     If description.Substring(description.Length - 2, 2).Equals("。。") Then
@@ -255,10 +274,27 @@ Public Class TranslationDataBase
                     End If
                   Next
                 End If
+
+
               End If
 
-              part = ""
             End If
+
+          End If
+
+
+
+          '括弧のネスト判定
+          For i As Integer = 0 To line.Length - 1
+            If line.Substring(i, 1).Equals("}") Then
+              nestLevel -= 1
+            End If
+          Next
+
+          If isPartEnter AndAlso nestLevel = 0 Then
+            'PARTの外にでた
+            isPart = False
+            isPartEnter = False
           End If
 
         End While
@@ -272,11 +308,13 @@ Public Class TranslationDataBase
         Me.SaveDatabase()
       End If
 
-    Catch ex As Exception
-      Throw
-    End Try
+      Return importCount
 
-    Return importCount
+    Catch ex As Exception
+
+      Throw
+
+    End Try
 
   End Function
 
@@ -285,8 +323,8 @@ Public Class TranslationDataBase
   ''' 翻訳処理
   ''' </summary>
   Public Function Translate(dirName As String,
-                            partName As String,
-                            srcText As String) As String
+                              partName As String,
+                              srcText As String) As String
 
     If dirName.Equals("") OrElse partName.Equals("") Then
       Return ""

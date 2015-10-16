@@ -156,7 +156,7 @@ Public Class FormMain
       .FilterIndex = 1
 
       'タイトルを設定する
-      .Title = "ファイルを選択してください"
+      .Title = "翻訳されたModuleManager用のcfgファイルを選択してください"
 
       'ダイアログボックスを閉じる前に現在のディレクトリを復元するようにする
       .RestoreDirectory = True
@@ -256,13 +256,9 @@ Public Class FormMain
           errMsg = Me.SrcPathLabel.Text & "で指定されたフォルダが見つかりません。"
         ElseIf Not Common.File.ExistsDirectory(translationSetting.DsgtPath) Then
           errMsg = Me.DstPathLabel.Text & "で指定されたフォルダが見つかりません。"
-#If DEBUG Then
-          'デバック時は保存先は空でなくてもOK
-#Else
-      ElseIf Not Common.File.IsEmptyDirectory(translationSetting.DsgtPath) Then
-        '保存先は空でないとダメ
-        errMsg = Me.DstPathLabel.Text & "で指定されたフォルダが空ではありません。"
-#End If
+          'ElseIf Not Common.File.IsEmptyDirectory(translationSetting.DsgtPath) Then
+          '  '保存先は空でないとダメ
+          '  errMsg = Me.DstPathLabel.Text & "で指定されたフォルダが空ではありません。"
         End If
         If Not errMsg.Equals("") Then
           '設定値にエラーが有る場合エラーを表示してここで戻る
@@ -273,6 +269,20 @@ Public Class FormMain
           Return
         End If
       End With
+
+      If Not Common.File.IsEmptyDirectory(translationSetting.DsgtPath) Then
+
+        If MessageBox.Show("保存先のフォルダにファイルが存在しますが続行しますか？",
+                   My.Application.Info.ProductName,
+                   MessageBoxButtons.OKCancel,
+                   MessageBoxIcon.Question) <> DialogResult.OK Then
+          Return
+        End If
+
+      End If
+
+
+
 
       'プログレスバー初期設定
       Me.ProgressLabel.Text = "処理開始"
@@ -555,6 +565,9 @@ Public Class FormMain
       '成功
       Me.ProgressBar.Value = Me.ProgressBar.Maximum
       Me.ProgressLabel.Text = "処理が終了しました。"
+
+      'フォルダを開く
+      System.Diagnostics.Process.Start(Me.DstPathTextBox.Text.Trim())
     End If
 
     'ボタン類を有効にする

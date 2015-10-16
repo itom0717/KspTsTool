@@ -50,7 +50,7 @@ Public Class PartInfo
 
 
   ''' <summary>
-  ''' cfgファイルから各値を取得する
+  ''' part cfgファイルから各値を取得する
   ''' </summary>
   ''' <param name="filename"></param>
   Private Sub GetPartInfo(filename As String)
@@ -85,7 +85,8 @@ Public Class PartInfo
       Using sr As New System.IO.StreamReader(filename, System.Text.Encoding.ASCII)
 
         Dim nestLevel As Integer = 0
-        Dim isPart As Boolean = False
+        Dim isPart As Boolean = False 'Partの中
+        Dim isPartEnter As Boolean = False 'partの中に入った
 
         While sr.Peek() > -1
           Dim line As String = sr.ReadLine()
@@ -102,8 +103,8 @@ Public Class PartInfo
 
           'Parts判定
           If Not isPart AndAlso nestLevel = 0 AndAlso rPart.IsMatch(line) Then
-            'PARTの中に入った
             isPart = True
+            isPartEnter = False
           End If
 
 
@@ -111,21 +112,13 @@ Public Class PartInfo
           For i As Integer = 0 To line.Length - 1
             If line.Substring(i, 1).Equals("{") Then
               nestLevel += 1
-            ElseIf line.Substring(i, 1).Equals("}") Then
-              nestLevel -= 1
-
-              If isPart AndAlso nestLevel = 0 Then
-                'PARTの外にでた
-                isPart = False
-                Exit While
-              End If
-
             End If
           Next
 
 
           'Name/Title/descriptionの取得
           If isPart AndAlso nestLevel = 1 Then
+            isPartEnter = True 'partの中に入った
 
             If IsNothing(Me.Name) Then '最初の１回のみ
               mc = rName.Matches(line)
@@ -156,6 +149,22 @@ Public Class PartInfo
             End If
 
           End If
+
+
+          '括弧のネスト判定
+          For i As Integer = 0 To line.Length - 1
+            If line.Substring(i, 1).Equals("}") Then
+              nestLevel -= 1
+            End If
+          Next
+
+          If isPartEnter AndAlso nestLevel = 0 Then
+            'PARTの外にでた
+            isPart = False
+            isPartEnter = False
+            Exit While
+          End If
+
 
         End While
 
