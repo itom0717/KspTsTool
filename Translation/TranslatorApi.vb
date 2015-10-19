@@ -59,7 +59,7 @@ Public Class TranslatorApi
     Try
 
       'アクセストークン取得
-      'アクセストークンは10分間有効であるため、余裕を見て9分以上経過している場合に取得する
+      'アクセストークンは10分間有効であるため、余裕を見て9分以上経過している場合に再度取得する
       If IsNothing(AdmToken) OrElse Me.Stopwatch.ElapsedMilliseconds > (Me.AccessTokenExpiresIn * 1000) Then
         Me.Stopwatch.Reset()
         Me.Stopwatch.Start()

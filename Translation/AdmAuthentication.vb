@@ -2,7 +2,7 @@
 Imports System.Runtime.Serialization.Json
 
 ''' <summary>
-''' Microsoft Translator APIを使用した自動翻訳
+''' Microsoft Translator APIを使用した自動翻訳でAccessTokenを取得
 ''' </summary>
 ''' <remarks>
 ''' 参考
@@ -32,7 +32,7 @@ Public Class AdmAuthentication
   Private Request As String
 
   ''' <summary>
-  ''' New
+  ''' インスタンスを生成
   ''' </summary>
   ''' <param name="clientId"></param>
   ''' <param name="clientSecret"></param>
@@ -44,7 +44,7 @@ Public Class AdmAuthentication
   End Sub
 
   ''' <summary>
-  ''' GetAccessToken
+  ''' GetAccessTokenを取得
   ''' </summary>
   ''' <returns></returns>
   Public Function GetAccessToken() As AdmAccessToken
@@ -52,7 +52,7 @@ Public Class AdmAuthentication
   End Function
 
   ''' <summary>
-  ''' HttpPost
+  ''' HttpPostでAccessTokenを取得する
   ''' </summary>
   ''' <param name="datamarketAccessUri"></param>
   ''' <param name="requestDetails"></param>

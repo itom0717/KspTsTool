@@ -22,6 +22,7 @@ Partial Class FormMain
   'コード エディターを使って変更しないでください。
   <System.Diagnostics.DebuggerStepThrough()> _
   Private Sub InitializeComponent()
+    Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FormMain))
     Me.CloseButton = New System.Windows.Forms.Button()
     Me.TranslationSettingButton = New System.Windows.Forms.Button()
     Me.SrcPathLabel = New System.Windows.Forms.Label()
@@ -160,11 +161,11 @@ Partial Class FormMain
     'ImportTranslationCfgButton
     '
     Me.ImportTranslationCfgButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-    Me.ImportTranslationCfgButton.Location = New System.Drawing.Point(166, 152)
+    Me.ImportTranslationCfgButton.Location = New System.Drawing.Point(143, 152)
     Me.ImportTranslationCfgButton.Name = "ImportTranslationCfgButton"
-    Me.ImportTranslationCfgButton.Size = New System.Drawing.Size(93, 23)
+    Me.ImportTranslationCfgButton.Size = New System.Drawing.Size(116, 23)
     Me.ImportTranslationCfgButton.TabIndex = 12
-    Me.ImportTranslationCfgButton.Text = "翻訳cfg読込"
+    Me.ImportTranslationCfgButton.Text = "翻訳済ファイル読込"
     Me.ImportTranslationCfgButton.UseVisualStyleBackColor = True
     '
     'FormMain
@@ -186,6 +187,7 @@ Partial Class FormMain
     Me.Controls.Add(Me.TranslationSettingButton)
     Me.Controls.Add(Me.CloseButton)
     Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+    Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
     Me.MaximizeBox = False
     Me.MinimizeBox = False
     Me.Name = "FormMain"

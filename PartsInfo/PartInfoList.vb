@@ -10,7 +10,7 @@ Public Class PartInfoList
   Private Property TranslationFilename As String = ""
 
   ''' <summary>
-  ''' New
+  ''' インスタンスを生成
   ''' </summary>
   ''' <param name="translationFilename"></param>
   Public Sub New(translationFilename As String)
@@ -26,9 +26,12 @@ Public Class PartInfoList
   ''' </remarks>
   Public Sub Save()
 
-    Using sw As New System.IO.StreamWriter(Me.TranslationFilename, False, System.Text.Encoding.GetEncoding("UTF-16"))
+    Using sw As New System.IO.StreamWriter(Me.TranslationFilename, False, System.Text.Encoding.UTF8)
+
+      '部品数分ループ
       For Each partInfo As PartInfo In Me
 
+        'Nameが無いものは処理しない
         If Not IsNothing(partInfo.Name) AndAlso Not partInfo.Name.Equals("") Then
 
           Dim outputFlag As Boolean = True
@@ -39,20 +42,20 @@ Public Class PartInfoList
             outputFlag = False
           End If
 
-          sw.WriteLine("//" & CStr(IIf(Not IsNothing(partInfo.Title), partInfo.Title, partInfo.Name)))
-          If outputFlag Then
-            sw.WriteLine(String.Format("@PART[{0}]", partInfo.Name))
-            sw.WriteLine("{")
-            sw.WriteLine("  //japasese text")
-            sw.WriteLine(String.Format("  @description = {0}", CStr(IIf(Not IsNothing(partInfo.DescriptionJapanese), partInfo.DescriptionJapanese, ""))))
-            sw.WriteLine("}")
+          sw.WriteLine(String.Format("@PART[{0}]", partInfo.Name))
+          sw.WriteLine("{")
+          sw.WriteLine("//Title")
+          sw.WriteLine("//  " & CStr(IIf(Not IsNothing(partInfo.Title), partInfo.Title, partInfo.Name)))
+          sw.WriteLine("//Original Text")
+          sw.WriteLine("//  " & String.Format("@description = {0}", CStr(IIf(Not IsNothing(partInfo.Description), partInfo.Description, ""))))
+          sw.WriteLine("//Japanese Text")
+          If Not outputFlag Then
+            sw.Write("//  ")
           Else
-            sw.WriteLine(String.Format("//@PART[{0}]", partInfo.Name))
-            sw.WriteLine("//{")
-            sw.WriteLine("//  original text")
-            sw.WriteLine(String.Format("//  @description = {0}", CStr(IIf(Not IsNothing(partInfo.Description), partInfo.Description, ""))))
-            sw.WriteLine("//}")
+            sw.Write("    ")
           End If
+          sw.WriteLine(String.Format("@description = {0}", CStr(IIf(Not IsNothing(partInfo.DescriptionJapanese), partInfo.DescriptionJapanese, ""))))
+          sw.WriteLine("}")
           sw.WriteLine("")
         End If
       Next

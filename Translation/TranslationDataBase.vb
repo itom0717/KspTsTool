@@ -3,55 +3,75 @@
 ''' </summary>
 Public Class TranslationDataBase
 
+  ''' <summary>
+  ''' 翻訳データベースの名前
+  ''' </summary>
+  Public Const DatabaseFileName As String = "TranslationDataBase.tsv"
+
 
   ''' <summary>
   ''' 翻訳DataTable
   ''' </summary>
-  Private TranslationDataTable As TranslationDataTable = Nothing
+  Public TranslationDataTable As TranslationDataTable = Nothing
 
   ''' <summary>
   ''' ファイル名
   ''' </summary>
-  Private Filename As String = ""
+  Private DatabaseFilePath As String = ""
 
   ''' <summary>
-  ''' 自動翻訳処理
+  ''' 自動翻訳処理用Class
   ''' </summary>
   Private TranslatorApi As TranslatorApi = Nothing
 
   ''' <summary>
-  '''　データが変更されたか？
-  ''' </summary>
-  Private IsChange As Boolean = False
-
-  ''' <summary>
-  ''' NEW
+  ''' インスタンスを生成(TranslatorApi使用しない場合)
   ''' </summary>
   Public Sub New()
-    Me.New("", "")
+    Me.New("", "", "")
   End Sub
 
   ''' <summary>
-  ''' NEW
+  ''' インスタンスを生成(TranslatorApi使用しない場合+インポートファイル読込用)
   ''' </summary>
-  Public Sub New(clientId As String, clientSecret As String)
+  ''' <param name="databaseFilePath"></param>
+  Public Sub New(databaseFilePath As String)
+    Me.New("", "", databaseFilePath)
+  End Sub
+
+  ''' <summary>
+  ''' インスタンスを生成(TranslatorApi使用する場合)
+  ''' </summary>
+  ''' <param name="clientId">マイクロソフトへ登録した「クライアントID」</param>
+  ''' <param name="clientSecret">マイクロソフトへ登録した「顧客の秘密」</param>
+  ''' <remarks>
+  ''' clientId または clientSecret が空欄の場合は、TranslatorApiを使用しない。
+  ''' </remarks>
+  Public Sub New(clientId As String, clientSecret As String, Optional databaseFilePath As String = "")
 
     ' ファイル名
-    Me.Filename = Common.File.AddDirectorySeparator(My.Application.Info.DirectoryPath) & "TranslationDataBase.tsv"
+    If databaseFilePath.Equals("") Then
+      Me.DatabaseFilePath = Common.File.AddDirectorySeparator(My.Application.Info.DirectoryPath) & DatabaseFileName
+    Else
+      'インポート用ファイル
+      Me.DatabaseFilePath = databaseFilePath
+    End If
 
-    '翻訳DB
+    '翻訳DataTable
     Me.TranslationDataTable = New TranslationDataTable
 
-    '自動翻訳
+    'TranslatorApi（自動翻訳）の設定
     If Not clientId.Equals("") AndAlso Not clientSecret.Equals("") Then
+      'TranslatorApi使用する
       Me.TranslatorApi = New TranslatorApi(clientId, clientSecret)
     Else
+      'TranslatorApi使用しない
       Me.TranslatorApi = Nothing
     End If
   End Sub
 
   ''' <summary>
-  ''' Finalize
+  ''' 終了処理
   ''' </summary>
   Protected Overrides Sub Finalize()
     Me.TranslationDataTable = Nothing
@@ -60,22 +80,54 @@ Public Class TranslationDataBase
   End Sub
 
   ''' <summary>
-  ''' DB読込
+  ''' 翻訳データベースの読込
   ''' </summary>
   Public Sub LoadDatabse()
 
-    If Not Common.File.ExistsFile(Me.Filename) Then
+    If Not Common.File.ExistsFile(Me.DatabaseFilePath) Then
+      'ファイルが存在しない場合は、何もしない
       Return
     End If
 
+    Dim dirNameIndex As Integer = -1
+    Dim partNameIndex As Integer = -1
+    Dim partTitleIndex As Integer = -1
+    Dim orgTextIndex As Integer = -1
+    Dim japaneseTextIndex As Integer = -1
+    Dim memoIndex As Integer = -1
+    For i As Integer = 0 To Me.TranslationDataTable.Columns.Count - 1
+      Select Case Me.TranslationDataTable.Columns(i).ColumnName
+        Case TranslationDataTable.ColumnNameDirName
+          dirNameIndex = i
+        Case TranslationDataTable.ColumnNamePartName
+          partNameIndex = i
+        Case TranslationDataTable.ColumnNamePartTitle
+          partTitleIndex = i
+        Case TranslationDataTable.ColumnNameOriginalText
+          orgTextIndex = i
+        Case TranslationDataTable.ColumnNameJapaneseText
+          japaneseTextIndex = i
+        Case TranslationDataTable.ColumnNameMemo
+          memoIndex = i
+      End Select
+    Next
 
-    Using tfp As New FileIO.TextFieldParser(Me.Filename, System.Text.Encoding.GetEncoding("UTF-16"))
+    '旧フォーマット用
+    Dim oldDirNameIndex As Integer = CInt(IIf(dirNameIndex < partTitleIndex, dirNameIndex, dirNameIndex - 1))
+    Dim oldPartNameIndex As Integer = CInt(IIf(partNameIndex < partTitleIndex, partNameIndex, partNameIndex - 1))
+    Dim oldOrgTextIndex As Integer = CInt(IIf(orgTextIndex < partTitleIndex, orgTextIndex, orgTextIndex - 1))
+    Dim oldJapaneseTextIndex As Integer = CInt(IIf(japaneseTextIndex < partTitleIndex, japaneseTextIndex, japaneseTextIndex - 1))
+    Dim oldMemoIndex As Integer = CInt(IIf(memoIndex < partTitleIndex, memoIndex, memoIndex - 1))
+
+
+
+    'TextFieldParserでファイルを開く
+    Using tfp As New FileIO.TextFieldParser(Me.DatabaseFilePath, System.Text.Encoding.UTF8)
 
       'フィールドが文字で区切られているとする
-      'デフォルトでDelimitedなので、必要なし
       tfp.TextFieldType = FileIO.FieldType.Delimited
 
-      '区切り文字を指定
+      '区切り文字を指定 タブコードとする
       tfp.Delimiters = New String() {vbTab}
 
       'フィールドを"で囲み、改行文字、区切り文字を含めることができるか
@@ -84,47 +136,76 @@ Public Class TranslationDataBase
       'フィールドの前後からスペースを削除する
       tfp.TrimWhiteSpace = True
 
-
+      Dim oldFormat As Boolean = False
       If Not tfp.EndOfData Then
-        '先頭行は捨てる
-        tfp.ReadFields()
+        '先頭行（ヘッダー行）は捨てる
+
+        '先頭行（ヘッダー行）で新旧データ判定
+        'フィールドを読み込む
+        Dim fields As String() = tfp.ReadFields()
+
+        If Not fields(partTitleIndex).Equals(TranslationDataTable.ColumnNamePartTitle) Then
+          'Titleがない場合は、旧フォーマット
+          oldFormat = True
+        End If
+
       End If
       While Not tfp.EndOfData
         'フィールドを読み込む
         Dim fields As String() = tfp.ReadFields()
+
         Dim newRow As DataRow = Me.TranslationDataTable.NewRow()
 
-        For i As Integer = 0 To Me.TranslationDataTable.Columns.Count - 1
-          newRow(i) = fields(i)
-        Next
+        '各カラムにデータをセット
+        If Not oldFormat Then
+          newRow(dirNameIndex) = fields(dirNameIndex)
+          newRow(partNameIndex) = fields(partNameIndex)
+          newRow(partTitleIndex) = fields(partTitleIndex)
+          newRow(orgTextIndex) = fields(orgTextIndex)
+          newRow(japaneseTextIndex) = fields(japaneseTextIndex)
+          newRow(memoIndex) = fields(memoIndex)
+        Else
+          '旧フォーマット
+          newRow(dirNameIndex) = fields(oldDirNameIndex)
+          newRow(partNameIndex) = fields(oldPartNameIndex)
+          newRow(partTitleIndex) = ""
+          newRow(orgTextIndex) = fields(oldOrgTextIndex)
+          newRow(japaneseTextIndex) = fields(oldJapaneseTextIndex)
+          newRow(memoIndex) = fields(oldMemoIndex)
+        End If
 
+        'DataTableに追加
         Me.TranslationDataTable.Rows.Add(newRow)
       End While
 
+      'ファイルを閉じる
       tfp.Close()
     End Using
 
-    Me.IsChange = False
-
+    '変更無しに設定
+    Me.TranslationDataTable.AcceptChanges()
   End Sub
 
   ''' <summary>
-  ''' 翻訳ファイル保存
+  ''' 翻訳データベースの更新
   ''' </summary>
   Public Sub SaveDatabase()
 
-    If Not Me.IsChange Then
+    If IsNothing(Me.TranslationDataTable.GetChanges()) Then
+      '変更されたデータがなければ何もしない
       Return
     End If
 
     Try
+      Dim fileBase As String = Common.File.GetWithoutExtension(Me.DatabaseFilePath)
 
-      Dim tmpFilename As String = Me.Filename & ".Tmp"
-      Dim bakFilename As String = Me.Filename & ".Bak"
+
+      '一旦*.tmpファイルで保存
+      Dim tmpFilename As String = fileBase & ".tmp"
       If Common.File.ExistsFile(tmpFilename) Then
         Common.File.DeleteFile(tmpFilename)
       End If
-      Using sw As New System.IO.StreamWriter(tmpFilename, False, System.Text.Encoding.GetEncoding("UTF-16"))
+      Using sw As New System.IO.StreamWriter(tmpFilename, False, System.Text.Encoding.UTF8)
 
         Dim columnLine As String = ""
         For Each column As DataColumn In Me.TranslationDataTable.Columns
@@ -135,7 +216,10 @@ Public Class TranslationDataBase
         Next
         sw.WriteLine(columnLine)
 
-        For Each row As DataRow In Me.TranslationDataTable.Select(Nothing, "フォルダ名, パーツ名")
+        For Each row As DataRow In Me.TranslationDataTable.Select(Nothing,
+                                                                  TranslationDataTable.ColumnNameDirName &
+                                                                  "," &
+                                                                  TranslationDataTable.ColumnNamePartName)
           Dim line As String = ""
 
           For i As Integer = 0 To Me.TranslationDataTable.Columns.Count - 1
@@ -154,14 +238,33 @@ Public Class TranslationDataBase
         sw.Close()
       End Using
 
-      If Common.File.ExistsFile(Me.Filename) Then
-        If Common.File.ExistsFile(bakFilename) Then
-          Common.File.DeleteFile(bakFilename)
+      'バックアップファイルの処理
+      For bkCount As Integer = 9 To 0 Step -1
+        Dim filename1 As String = fileBase & CStr(IIf(bkCount = 0, ".bak", ".bk" & bkCount))
+        If Common.File.ExistsFile(filename1) Then
+          Common.File.DeleteFile(filename1)
         End If
-        Common.File.MoveFile(Me.Filename, bakFilename)
-      End If
 
-      Common.File.MoveFile(tmpFilename, Me.Filename)
+        Dim filename2 As String = fileBase
+        Select Case bkCount - 1
+          Case -1
+            filename2 &= "." & Common.File.GetExtension(Me.DatabaseFilePath)
+          Case 0
+            filename2 &= ".bak"
+          Case Else
+            filename2 &= ".bk" & (bkCount - 1)
+        End Select
+        If Common.File.ExistsFile(filename2) Then
+          Common.File.MoveFile(filename2, filename1)
+        End If
+
+      Next
+
+      '*.tmpを*.tsvへ変更
+      Common.File.MoveFile(tmpFilename, Me.DatabaseFilePath)
+
+      '正常に保存できたら、変更無しに設定
+      Me.TranslationDataTable.AcceptChanges()
 
     Catch ex As Exception
       Throw
@@ -169,20 +272,108 @@ Public Class TranslationDataBase
 
   End Sub
 
+
   ''' <summary>
-  ''' ModuleManager用のcfgファイル読込
+  ''' 翻訳ファイルの読込
   ''' </summary>
   ''' <param name="filename"></param>
   Public Function ImportTranslationFile(filename As String) As Integer
 
 
+    If Common.File.GetExtension(filename).Equals(Common.File.GetExtension(DatabaseFileName), StringComparison.CurrentCultureIgnoreCase) Then
+      'tsvファイル
+      Return Me.ImportDatabaseFile(filename)
+    Else
+      ' ModuleManager用のcfgファイル読込
+      Return Me.ImportModuleManagerCfgFile(filename)
+    End If
+
+
+  End Function
+
+  ''' <summary>
+  ''' 翻訳用データベースファイルの取り込み
+  ''' </summary>
+  ''' <param name="tsvFilename">tsvファイル</param>
+  ''' <returns></returns>
+  Private Function ImportDatabaseFile(tsvFilename As String) As Integer
+
     Try
-      Dim importCount As Integer = 0
-
-
       '翻訳DB読込
       Me.LoadDatabse()
 
+      'インポートする翻訳DB
+      Dim importTranslationDataBase As New TranslationDataBase(tsvFilename)
+      importTranslationDataBase.LoadDatabse()
+
+      '読み込んだデータでループ
+      For Each importRow As DataRow In importTranslationDataBase.TranslationDataTable.Rows
+
+        If Not CStr(importRow(TranslationDataTable.ColumnNameJapaneseText)).Equals("") Then
+
+          'データが存在するかチェック
+          Dim selectRow() As DataRow _
+                      = Me.TranslationDataTable.Select(
+                         TranslationDataTable.ColumnNameDirName & "='" & Me.DoubleSiglQrt(CStr(importRow(TranslationDataTable.ColumnNameDirName))) & "'" &
+                         " AND " &
+                         TranslationDataTable.ColumnNamePartName & "='" & Me.DoubleSiglQrt(CStr(importRow(TranslationDataTable.ColumnNamePartName))) & "'")
+
+          If selectRow.Count > 0 Then
+            '存在するため、データ変更
+            For i As Integer = 0 To selectRow.Count - 1
+
+              If Not CStr(selectRow(i)(TranslationDataTable.ColumnNameOriginalText)).Equals(CStr(importRow(TranslationDataTable.ColumnNameOriginalText))) _
+                  OrElse Not CStr(selectRow(i)(TranslationDataTable.ColumnNameJapaneseText)).Equals(CStr(importRow(TranslationDataTable.ColumnNameJapaneseText))) Then
+                selectRow(i)(TranslationDataTable.ColumnNameOriginalText) = CStr(importRow(TranslationDataTable.ColumnNameOriginalText))
+                selectRow(i)(TranslationDataTable.ColumnNameJapaneseText) = CStr(importRow(TranslationDataTable.ColumnNameJapaneseText))
+                selectRow(i)(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoAddTextFormat)
+              End If
+
+            Next
+          Else
+            '存在しないので新規追加
+            Dim newRow As DataRow = Me.TranslationDataTable.NewRow()
+
+            '各カラムにデータをセット
+            For i As Integer = 0 To Me.TranslationDataTable.Columns.Count - 1
+              newRow(i) = importRow(i)
+            Next
+
+            'DataTableに追加
+            Me.TranslationDataTable.Rows.Add(newRow)
+          End If
+
+
+        End If
+
+      Next
+      importTranslationDataBase = Nothing
+
+
+      '変更件数を返す
+      Dim importCount As Integer = 0
+      Dim dt As DataTable = Me.TranslationDataTable.GetChanges()
+      If Not IsNothing(dt) Then
+        importCount = dt.Rows.Count
+      End If
+
+      '翻訳DB保存
+      Me.SaveDatabase()
+
+      Return importCount
+    Catch ex As Exception
+      Throw
+    End Try
+
+  End Function
+
+  ''' <summary>
+  ''' ModuleManager用のcfgファイル読込
+  ''' </summary>
+  ''' <param name="moduleManagerCfgFilename"></param>
+  Private Function ImportModuleManagerCfgFile(moduleManagerCfgFilename As String) As Integer
+
+    Try
       Dim rPart As New System.Text.RegularExpressions.Regex(
             "^@PART\s*\[([^\}]+)\]",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase)
@@ -196,10 +387,11 @@ Public Class TranslationDataBase
       Dim description As String = ""
       Dim check As New Hashtable
 
-      Me.IsChange = False
+      '翻訳DB読込
+      Me.LoadDatabse()
 
-      '各cfgファイルの解析だが、良い方法ないので、強引に解析する
-      Using sr As New System.IO.StreamReader(filename, System.Text.Encoding.GetEncoding("UTF-16"))
+      '各cfgファイルの解析
+      Using sr As New System.IO.StreamReader(moduleManagerCfgFilename, System.Text.Encoding.UTF8)
 
         Dim nestLevel As Integer = 0
         Dim isPart As Boolean = False 'Partの中
@@ -252,7 +444,7 @@ Public Class TranslationDataBase
               If Not part.Equals("") AndAlso Not check.ContainsKey(part) Then
                 check.Add(part, 1) '同じ名前のものは取り込まない
 
-                Dim selectRow() As DataRow = Me.TranslationDataTable.Select("パーツ名='" & Me.DoubleSiglQrt(part) & "'")
+                Dim selectRow() As DataRow = Me.TranslationDataTable.Select(TranslationDataTable.ColumnNamePartName & "='" & Me.DoubleSiglQrt(part) & "'")
                 If selectRow.Count > 0 Then
                   For i As Integer = 0 To selectRow.Count - 1
                     '加工
@@ -264,13 +456,9 @@ Public Class TranslationDataBase
                       description = description.Substring(0, description.Length - 1)
                     End If
 
-                    If Not description.Equals(CStr(selectRow(i)("日本語テキスト"))) Then
-
-                      selectRow(i)("日本語テキスト") = description
-                      selectRow(i)("備考") = Now.ToString("yyyy/MM/dd HH:mm:ss 取込")
-
-                      Me.IsChange = True
-                      importCount += 1
+                    If Not description.Equals(CStr(selectRow(i)(TranslationDataTable.ColumnNameJapaneseText))) Then
+                      selectRow(i)(TranslationDataTable.ColumnNameJapaneseText) = description
+                      selectRow(i)(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoImportTextFormat)
                     End If
                   Next
                 End If
@@ -281,7 +469,6 @@ Public Class TranslationDataBase
             End If
 
           End If
-
 
 
           '括弧のネスト判定
@@ -303,17 +490,19 @@ Public Class TranslationDataBase
         sr.Close()
       End Using
 
-      If Me.IsChange Then
-        '翻訳DB保存
-        Me.SaveDatabase()
+      '変更件数を返す
+      Dim importCount As Integer = 0
+      Dim dt As DataTable = Me.TranslationDataTable.GetChanges()
+      If Not IsNothing(dt) Then
+        importCount = dt.Rows.Count
       End If
 
+      '翻訳DB保存
+      Me.SaveDatabase()
+
       Return importCount
-
     Catch ex As Exception
-
       Throw
-
     End Try
 
   End Function
@@ -323,8 +512,9 @@ Public Class TranslationDataBase
   ''' 翻訳処理
   ''' </summary>
   Public Function Translate(dirName As String,
-                              partName As String,
-                              srcText As String) As String
+                            partName As String,
+                            partTitle As String,
+                            srcText As String) As String
 
     If dirName.Equals("") OrElse partName.Equals("") Then
       Return ""
@@ -345,17 +535,24 @@ Public Class TranslationDataBase
       '日本語テキスト
 
       'DBに存在するかチェック
-      Dim selectRow() As DataRow = Me.TranslationDataTable.Select("フォルダ名 = '" & Me.DoubleSiglQrt(dirName) & "' AND パーツ名='" & Me.DoubleSiglQrt(partName) & "'")
+      Dim selectRow() As DataRow = Me.TranslationDataTable.Select(
+                                    TranslationDataTable.ColumnNameDirName & "='" & Me.DoubleSiglQrt(dirName) & "'" &
+                                    " AND " &
+                                    TranslationDataTable.ColumnNamePartName & "='" & Me.DoubleSiglQrt(partName) & "'")
       If selectRow.Count > 0 Then
         'データあり
-        jpnText = selectRow(0)("日本語テキスト").trim.ToString()
+        jpnText = selectRow(0)(TranslationDataTable.ColumnNameJapaneseText).trim.ToString()
+
+        'パーツタイトル変更されていたら変更する
+        If Not partTitle.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNamePartTitle))) Then
+          selectRow(0)(TranslationDataTable.ColumnNamePartTitle) = partTitle
+        End If
 
         '元テキスト変更の場合
-        If Not srcText.Equals(CStr(selectRow(0)("元テキスト"))) Then
+        If Not srcText.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNameOriginalText))) Then
           '翻訳もののテキストと同じデータがあればそれを使用する
           jpnText = Me.SearchSameText(srcText)
-          selectRow(0)("元テキスト") = srcText
-          Me.IsChange = True
+          selectRow(0)(TranslationDataTable.ColumnNameOriginalText) = srcText
         ElseIf jpnText.Equals("") Then
           '元テキストが変更されていない場合+翻訳テキストが空欄
           '翻訳もののテキストと同じデータがあればそれを使用する
@@ -367,10 +564,9 @@ Public Class TranslationDataBase
           jpnText = Me.TranslatorApi.TranslateEnglishToJapanese(srcText)
         End If
 
-        If Not jpnText.Equals(CStr(selectRow(0)("日本語テキスト"))) Then
-          selectRow(0)("日本語テキスト") = jpnText
-          selectRow(0)("備考") = Now.ToString("yyyy/MM/dd HH:mm:ss 変更")
-          Me.IsChange = True
+        If Not jpnText.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNameJapaneseText))) Then
+          selectRow(0)(TranslationDataTable.ColumnNameJapaneseText) = jpnText
+          selectRow(0)(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoChangeTextFormat)
         End If
 
       Else
@@ -387,14 +583,14 @@ Public Class TranslationDataBase
 
         Dim newRow As DataRow = Me.TranslationDataTable.NewRow()
 
-        newRow("フォルダ名") = dirName
-        newRow("パーツ名") = partName
-        newRow("元テキスト") = srcText
-        newRow("日本語テキスト") = jpnText
-        newRow("備考") = Now.ToString("yyyy/MM/dd HH:mm:ss 追加")
+        newRow(TranslationDataTable.ColumnNameDirName) = dirName
+        newRow(TranslationDataTable.ColumnNamePartTitle) = partTitle
+        newRow(TranslationDataTable.ColumnNamePartName) = partName
+        newRow(TranslationDataTable.ColumnNameOriginalText) = srcText
+        newRow(TranslationDataTable.ColumnNameJapaneseText) = jpnText
+        newRow(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoAddTextFormat)
 
         Me.TranslationDataTable.Rows.Add(newRow)
-        Me.IsChange = True
 
       End If
 
@@ -408,17 +604,17 @@ Public Class TranslationDataBase
 
 
   ''' <summary>
-  ''' 翻訳もののテキストと同じデータがあるか検索
+  ''' 翻訳済みのテキストと同じデータがあるか検索し、あればそのテキストを返す
   ''' </summary>
   ''' <param name="srcText"></param>
   ''' <returns></returns>
   Private Function SearchSameText(srcText As String) As String
     Dim jpnText As String = ""
 
-    Dim selectRow() As DataRow = Me.TranslationDataTable.Select("元テキスト='" & Me.DoubleSiglQrt(srcText) & "'")
+    Dim selectRow() As DataRow = Me.TranslationDataTable.Select(TranslationDataTable.ColumnNameOriginalText & "='" & Me.DoubleSiglQrt(srcText) & "'")
     If selectRow.Count > 0 Then
       For i As Integer = 0 To selectRow.Count - 1
-        jpnText = selectRow(0)("日本語テキスト").trim.ToString()
+        jpnText = selectRow(0)(TranslationDataTable.ColumnNameJapaneseText).trim.ToString()
         If Not jpnText.Equals("") Then
           Exit For
         End If
@@ -434,8 +630,10 @@ Public Class TranslationDataBase
   ''' <param name="text"></param>
   ''' <returns></returns>
   ''' <remarks></remarks>
-  Public Function DoubleSiglQrt(ByVal text As String) As String
+  Private Function DoubleSiglQrt(ByVal text As String) As String
     Return text.Replace("'", "''")
   End Function
+
+
 
 End Class

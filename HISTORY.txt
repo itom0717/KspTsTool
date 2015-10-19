@@ -1,3 +1,9 @@
+Ver 1.2.0.0
+  2015/10/19 文字コードをUTF-16からUTF-8へ変更
+             TranslationDataBase.tsvのフォーマットにTitle(パーツの表示名称)追加
+             TranslationDataBase.tsvの取り込み機能追加
+             TranslationDataBase.tsvの修正時バックアップを10世代取るように修正
+
 Ver 1.1.0.0
   2015/10/15 cfgファイル読み込みロジック修正
   

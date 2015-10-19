@@ -4,7 +4,7 @@
 Public Class TranslationSetting
 
   ''' <summary>
-  ''' 元フォルダ
+  ''' 読込フォルダ
   ''' </summary>
   ''' <returns></returns>
   Public Property SrcPath As String = ""
@@ -15,12 +15,10 @@ Public Class TranslationSetting
   ''' <returns></returns>
   Public Property DsgtPath As String = ""
 
-
   ''' <summary>
   '''自動翻訳を行うか
   ''' </summary>
   Public IsTranslation As Boolean = False
-
 
   ''' <summary>
   ''' クライアントID
@@ -33,7 +31,5 @@ Public Class TranslationSetting
   ''' </summary>
   ''' <returns></returns>
   Public Property MicrosoftTranslatorAPIClientSecret As String = ""
-
-
 
 End Class

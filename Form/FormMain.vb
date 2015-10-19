@@ -7,6 +7,12 @@
 Public Class FormMain
 
   ''' <summary>
+  ''' 翻訳ファイル取り込みフォルダの前回のフォルダ記憶用
+  ''' </summary>
+  Private ImportTranslationFilrPath As String = ""
+
+
+  ''' <summary>
   ''' FormMain_Load
   ''' </summary>
   ''' <param name="sender"></param>
@@ -130,14 +136,19 @@ Public Class FormMain
   End Sub
 
   ''' <summary>
-  ''' 翻訳cfgファイルの読込
+  ''' 翻訳ファイルの読込
   ''' </summary>
   ''' <param name="sender"></param>
   ''' <param name="e"></param>
   Private Sub ImportTranslationCfgButton_Click(sender As Object, e As EventArgs) Handles ImportTranslationCfgButton.Click
     Dim filename As String = ""
 
-
+    '記憶されているフォルダのチェック
+    If Me.ImportTranslationFilrPath.Equals("") _
+      OrElse Not Common.File.ExistsDirectory(Me.ImportTranslationFilrPath) Then
+      '未設定or存在しないので、デスクトップを初期値として設定
+      Me.ImportTranslationFilrPath = Common.File.GetDesktopDirectory
+    End If
 
     'OpenFileDialogクラスのインスタンスを作成
     Dim openFileDialog As New OpenFileDialog
@@ -147,16 +158,16 @@ Public Class FormMain
       .FileName = ""
 
       'はじめに表示されるフォルダを指定する
-      .InitialDirectory = Common.File.GetDesktopDirectory
+      .InitialDirectory = Me.ImportTranslationFilrPath
 
       '[ファイルの種類]に表示される選択肢を指定
-      .Filter = "cfgファイル(*.cfg)|*.cfg|すべてのファイル(*.*)|*.*"
+      .Filter = "ModuleManager用cfgファイル|*.cfg|翻訳データベース|*." & Common.File.GetExtension(TranslationDataBase.DatabaseFileName) & ""
 
       '[ファイルの種類]
       .FilterIndex = 1
 
       'タイトルを設定する
-      .Title = "翻訳されたModuleManager用のcfgファイルを選択してください"
+      .Title = "翻訳用ModuleManagerのcfgファイルまたは翻訳データベースを選択してください"
 
       'ダイアログボックスを閉じる前に現在のディレクトリを復元するようにする
       .RestoreDirectory = True
@@ -171,14 +182,18 @@ Public Class FormMain
       If .ShowDialog() = DialogResult.OK Then
         'OKボタンがクリックされた
         filename = .FileName
+
+        'フォルダを記憶
+        Me.ImportTranslationFilrPath = Common.File.GetDirectoryName(filename)
       End If
     End With
     If filename.Equals("") Then
       Return
     End If
 
+
     Try
-      '翻訳DB
+      '翻訳データベースへ取り込み
       Dim translationDataBase As New TranslationDataBase()
       Dim importCount As Integer = translationDataBase.ImportTranslationFile(filename)
       translationDataBase = Nothing
@@ -237,7 +252,7 @@ Public Class FormMain
       With Nothing
         Dim errMsg As String = ""
         translationSetting.SrcPath = Me.SrcPathTextBox.Text.Trim()
-        TranslationSetting.DsgtPath = Me.DstPathTextBox.Text.Trim()
+        translationSetting.DsgtPath = Me.DstPathTextBox.Text.Trim()
         translationSetting.IsTranslation = My.Settings.IsTranslation
         translationSetting.MicrosoftTranslatorAPIClientId = My.Settings.MicrosoftTranslatorAPIClientId
         translationSetting.MicrosoftTranslatorAPIClientSecret = My.Settings.MicrosoftTranslatorAPIClientSecret
@@ -495,6 +510,7 @@ Public Class FormMain
               '翻訳処理
               partInfo.DescriptionJapanese = translationDataBase.Translate(dirName,
                                                                            partInfo.Name,
+                                                                           partInfo.Title,
                                                                            partInfo.Description)
             Next
 

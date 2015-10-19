@@ -28,9 +28,9 @@ Kerbal Space Program Translation Support Tool
 ⑤ 終了すると②で指定したフォルダに ModuleManager用のcfgファイル が生成されますので、ModuleManager.dll で読み込ませてください。
   
 ⑥ 手動で翻訳する場合は、本実行ファイルと同じ場所に「TranslationDataBase.tsv」がありますので、直接編集してください。  
-  タブ区切りのテキストファイルです。（文字コードはUTF-16です）
+  タブ区切りのテキストファイルです。（文字コードはUTF-8です）
   
-⑦「翻訳cfg読込」ボタンで別の翻訳済みの ModuleManager用のcfgファイル から、翻訳テキストを「TranslationDataBase.tsv」に取り込むことができます。  
+⑦「翻訳済ファイル読込」ボタンで別の翻訳済みの ModuleManager用のcfgファイル または「TranslationDataBase.tsv」から、翻訳テキストを「TranslationDataBase.tsv」に取り込むことができます。  
 
 
 ## Licence

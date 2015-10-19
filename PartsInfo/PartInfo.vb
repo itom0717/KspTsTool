@@ -16,7 +16,7 @@ Public Class PartInfo
   End Property
 
   ''' <summary>
-  ''' 名称
+  ''' Name
   ''' </summary>
   ''' <returns></returns>
   Public Property Name As String = Nothing
@@ -41,7 +41,7 @@ Public Class PartInfo
 
 
   ''' <summary>
-  ''' New
+  ''' インスタンスを生成
   ''' </summary>
   ''' <param name="filename"></param>
   Public Sub New(filename As String)
@@ -52,8 +52,8 @@ Public Class PartInfo
   ''' <summary>
   ''' part cfgファイルから各値を取得する
   ''' </summary>
-  ''' <param name="filename"></param>
-  Private Sub GetPartInfo(filename As String)
+  ''' <param name="partCfgFilename">読み込むパーツのcfgファイル</param>
+  Private Sub GetPartInfo(partCfgFilename As String)
     Try
 
       Dim rPart As New System.Text.RegularExpressions.Regex(
@@ -81,8 +81,8 @@ Public Class PartInfo
       Me.Description = Nothing
       Me.DescriptionJapanese = Nothing
 
-      '各cfgファイルの解析だが、良い方法ないので、強引に解析する
-      Using sr As New System.IO.StreamReader(filename, System.Text.Encoding.ASCII)
+      '各cfgファイルの解析
+      Using sr As New System.IO.StreamReader(partCfgFilename, System.Text.Encoding.UTF8)
 
         Dim nestLevel As Integer = 0
         Dim isPart As Boolean = False 'Partの中
