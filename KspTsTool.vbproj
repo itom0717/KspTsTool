@@ -145,7 +145,6 @@
     </None>
     <None Include="App.config" />
     <None Include="README.md" />
-    <None Include="TranslationDataBase.tsv" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="HISTORY.txt" />

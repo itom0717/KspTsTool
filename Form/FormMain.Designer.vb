@@ -37,25 +37,27 @@ Partial Class FormMain
     Me.ProgressBar = New System.Windows.Forms.ProgressBar()
     Me.ProgressLabel = New System.Windows.Forms.Label()
     Me.ImportTranslationCfgButton = New System.Windows.Forms.Button()
+    Me.OpenSrcPathButton = New System.Windows.Forms.Button()
+    Me.OpenDstPathButton = New System.Windows.Forms.Button()
     Me.SuspendLayout()
     '
     'CloseButton
     '
     Me.CloseButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.CloseButton.Location = New System.Drawing.Point(355, 152)
+    Me.CloseButton.Location = New System.Drawing.Point(397, 152)
     Me.CloseButton.Name = "CloseButton"
     Me.CloseButton.Size = New System.Drawing.Size(58, 23)
-    Me.CloseButton.TabIndex = 0
+    Me.CloseButton.TabIndex = 14
     Me.CloseButton.Text = "閉じる"
     Me.CloseButton.UseVisualStyleBackColor = True
     '
     'TranslationSettingButton
     '
     Me.TranslationSettingButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.TranslationSettingButton.Location = New System.Drawing.Point(265, 152)
+    Me.TranslationSettingButton.Location = New System.Drawing.Point(307, 152)
     Me.TranslationSettingButton.Name = "TranslationSettingButton"
     Me.TranslationSettingButton.Size = New System.Drawing.Size(84, 23)
-    Me.TranslationSettingButton.TabIndex = 1
+    Me.TranslationSettingButton.TabIndex = 13
     Me.TranslationSettingButton.Text = "翻訳設定"
     Me.TranslationSettingButton.UseVisualStyleBackColor = True
     '
@@ -65,7 +67,7 @@ Partial Class FormMain
     Me.SrcPathLabel.Location = New System.Drawing.Point(12, 9)
     Me.SrcPathLabel.Name = "SrcPathLabel"
     Me.SrcPathLabel.Size = New System.Drawing.Size(93, 12)
-    Me.SrcPathLabel.TabIndex = 2
+    Me.SrcPathLabel.TabIndex = 0
     Me.SrcPathLabel.Text = "GameDataフォルダ"
     '
     'SrcPathTextBox
@@ -77,15 +79,15 @@ Partial Class FormMain
     Me.SrcPathTextBox.Name = "SrcPathTextBox"
     Me.SrcPathTextBox.ReadOnly = True
     Me.SrcPathTextBox.Size = New System.Drawing.Size(355, 19)
-    Me.SrcPathTextBox.TabIndex = 3
+    Me.SrcPathTextBox.TabIndex = 1
     '
     'SrcPathButton
     '
     Me.SrcPathButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.SrcPathButton.Location = New System.Drawing.Point(387, 20)
+    Me.SrcPathButton.Location = New System.Drawing.Point(387, 22)
     Me.SrcPathButton.Name = "SrcPathButton"
     Me.SrcPathButton.Size = New System.Drawing.Size(22, 23)
-    Me.SrcPathButton.TabIndex = 4
+    Me.SrcPathButton.TabIndex = 2
     Me.SrcPathButton.Text = "..."
     Me.SrcPathButton.UseVisualStyleBackColor = True
     '
@@ -95,7 +97,7 @@ Partial Class FormMain
     Me.DstPathLabel.Location = New System.Drawing.Point(12, 51)
     Me.DstPathLabel.Name = "DstPathLabel"
     Me.DstPathLabel.Size = New System.Drawing.Size(93, 12)
-    Me.DstPathLabel.TabIndex = 5
+    Me.DstPathLabel.TabIndex = 4
     Me.DstPathLabel.Text = "翻訳データ作成先"
     '
     'DstPathTextBox
@@ -107,15 +109,15 @@ Partial Class FormMain
     Me.DstPathTextBox.Name = "DstPathTextBox"
     Me.DstPathTextBox.ReadOnly = True
     Me.DstPathTextBox.Size = New System.Drawing.Size(355, 19)
-    Me.DstPathTextBox.TabIndex = 6
+    Me.DstPathTextBox.TabIndex = 5
     '
     'DstPathButton
     '
     Me.DstPathButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-    Me.DstPathButton.Location = New System.Drawing.Point(387, 62)
+    Me.DstPathButton.Location = New System.Drawing.Point(387, 64)
     Me.DstPathButton.Name = "DstPathButton"
     Me.DstPathButton.Size = New System.Drawing.Size(22, 23)
-    Me.DstPathButton.TabIndex = 7
+    Me.DstPathButton.TabIndex = 6
     Me.DstPathButton.Text = "..."
     Me.DstPathButton.UseVisualStyleBackColor = True
     '
@@ -125,7 +127,7 @@ Partial Class FormMain
     Me.TranslationButton.Location = New System.Drawing.Point(12, 152)
     Me.TranslationButton.Name = "TranslationButton"
     Me.TranslationButton.Size = New System.Drawing.Size(93, 23)
-    Me.TranslationButton.TabIndex = 8
+    Me.TranslationButton.TabIndex = 10
     Me.TranslationButton.Text = "処理実行"
     Me.TranslationButton.UseVisualStyleBackColor = True
     '
@@ -138,7 +140,7 @@ Partial Class FormMain
     Me.CancelTranslationButton.Location = New System.Drawing.Point(44, 164)
     Me.CancelTranslationButton.Name = "CancelTranslationButton"
     Me.CancelTranslationButton.Size = New System.Drawing.Size(93, 23)
-    Me.CancelTranslationButton.TabIndex = 9
+    Me.CancelTranslationButton.TabIndex = 11
     Me.CancelTranslationButton.Text = "処理中止"
     Me.CancelTranslationButton.UseVisualStyleBackColor = True
     '
@@ -146,15 +148,15 @@ Partial Class FormMain
     '
     Me.ProgressBar.Location = New System.Drawing.Point(26, 111)
     Me.ProgressBar.Name = "ProgressBar"
-    Me.ProgressBar.Size = New System.Drawing.Size(355, 24)
-    Me.ProgressBar.TabIndex = 10
+    Me.ProgressBar.Size = New System.Drawing.Size(411, 24)
+    Me.ProgressBar.TabIndex = 9
     '
     'ProgressLabel
     '
     Me.ProgressLabel.Location = New System.Drawing.Point(29, 97)
     Me.ProgressLabel.Name = "ProgressLabel"
-    Me.ProgressLabel.Size = New System.Drawing.Size(352, 11)
-    Me.ProgressLabel.TabIndex = 11
+    Me.ProgressLabel.Size = New System.Drawing.Size(408, 11)
+    Me.ProgressLabel.TabIndex = 8
     Me.ProgressLabel.Text = "ProgressLabel"
     Me.ProgressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
     '
@@ -168,11 +170,33 @@ Partial Class FormMain
     Me.ImportTranslationCfgButton.Text = "翻訳済ファイル読込"
     Me.ImportTranslationCfgButton.UseVisualStyleBackColor = True
     '
+    'OpenSrcPathButton
+    '
+    Me.OpenSrcPathButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.OpenSrcPathButton.Location = New System.Drawing.Point(415, 22)
+    Me.OpenSrcPathButton.Name = "OpenSrcPathButton"
+    Me.OpenSrcPathButton.Size = New System.Drawing.Size(40, 23)
+    Me.OpenSrcPathButton.TabIndex = 3
+    Me.OpenSrcPathButton.Text = "開く"
+    Me.OpenSrcPathButton.UseVisualStyleBackColor = True
+    '
+    'OpenDstPathButton
+    '
+    Me.OpenDstPathButton.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+    Me.OpenDstPathButton.Location = New System.Drawing.Point(415, 64)
+    Me.OpenDstPathButton.Name = "OpenDstPathButton"
+    Me.OpenDstPathButton.Size = New System.Drawing.Size(40, 23)
+    Me.OpenDstPathButton.TabIndex = 7
+    Me.OpenDstPathButton.Text = "開く"
+    Me.OpenDstPathButton.UseVisualStyleBackColor = True
+    '
     'FormMain
     '
     Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
     Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-    Me.ClientSize = New System.Drawing.Size(421, 185)
+    Me.ClientSize = New System.Drawing.Size(463, 185)
+    Me.Controls.Add(Me.OpenDstPathButton)
+    Me.Controls.Add(Me.OpenSrcPathButton)
     Me.Controls.Add(Me.ImportTranslationCfgButton)
     Me.Controls.Add(Me.ProgressLabel)
     Me.Controls.Add(Me.ProgressBar)
@@ -212,4 +236,6 @@ Partial Class FormMain
   Friend WithEvents ProgressBar As ProgressBar
   Friend WithEvents ProgressLabel As Label
   Friend WithEvents ImportTranslationCfgButton As Button
+  Friend WithEvents OpenSrcPathButton As Button
+  Friend WithEvents OpenDstPathButton As Button
 End Class

@@ -9,7 +9,7 @@ Kerbal Space Program Translation Support Tool
  Microsoft Visual Studio Community 2015
 
 ## 必要ランタイム
- .NET Framework 4.5  
+ .NET Framework 4.5.2  
 
 ## 使い方
 

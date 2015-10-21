@@ -135,6 +135,56 @@ Public Class FormMain
     End If
   End Sub
 
+
+  ''' <summary>
+  ''' フォルダを開くボタン
+  ''' </summary>
+  ''' <param name="sender"></param>
+  ''' <param name="e"></param>
+  Private Sub OpenPathButton_Click(sender As Object, e As EventArgs) Handles OpenSrcPathButton.Click, OpenDstPathButton.Click
+
+    Dim button As Button = DirectCast(sender, Button)
+
+    Dim path As String
+    '押されたボタンによって取得するテキストボックスを分ける
+    If button.Name.Equals(Me.OpenSrcPathButton.Name) Then
+      'SrcPath
+      path = Me.SrcPathTextBox.Text
+    Else
+      'DstPath
+      path = Me.DstPathTextBox.Text
+    End If
+
+    If path.Equals("") Then
+      MessageBox.Show("フォルダを選択してください。",
+                      My.Application.Info.ProductName,
+                      MessageBoxButtons.OK,
+                      MessageBoxIcon.Information)
+      Return
+    End If
+
+    path = Common.File.AddDirectorySeparator(path)
+    If Not Common.File.ExistsDirectory(path) Then
+      MessageBox.Show("存在しないフォルダです。",
+                My.Application.Info.ProductName,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information)
+      Return
+    End If
+
+    Try
+      'フォルダを開く
+      System.Diagnostics.Process.Start(path)
+    Catch ex As Exception
+      MessageBox.Show("フォルダを開くことができません。",
+          My.Application.Info.ProductName,
+          MessageBoxButtons.OK,
+          MessageBoxIcon.Error)
+      Return
+    End Try
+  End Sub
+
+
   ''' <summary>
   ''' 翻訳ファイルの読込
   ''' </summary>
@@ -589,5 +639,6 @@ Public Class FormMain
     'ボタン類を有効にする
     Me.EnableButtons(True)
   End Sub
+
 
 End Class

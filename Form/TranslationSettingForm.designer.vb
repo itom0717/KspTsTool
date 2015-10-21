@@ -37,7 +37,7 @@ Partial Class TranslationSettingForm
     Me.CloseButton.Location = New System.Drawing.Point(390, 106)
     Me.CloseButton.Name = "CloseButton"
     Me.CloseButton.Size = New System.Drawing.Size(75, 23)
-    Me.CloseButton.TabIndex = 0
+    Me.CloseButton.TabIndex = 6
     Me.CloseButton.Text = "キャンセル"
     Me.CloseButton.UseVisualStyleBackColor = True
     '
@@ -47,7 +47,7 @@ Partial Class TranslationSettingForm
     Me.SaveButton.Location = New System.Drawing.Point(309, 106)
     Me.SaveButton.Name = "SaveButton"
     Me.SaveButton.Size = New System.Drawing.Size(75, 23)
-    Me.SaveButton.TabIndex = 1
+    Me.SaveButton.TabIndex = 5
     Me.SaveButton.Text = "保存"
     Me.SaveButton.UseVisualStyleBackColor = True
     '
@@ -66,15 +66,15 @@ Partial Class TranslationSettingForm
     Me.Label3.Location = New System.Drawing.Point(22, 47)
     Me.Label3.Name = "Label3"
     Me.Label3.Size = New System.Drawing.Size(67, 12)
-    Me.Label3.TabIndex = 4
+    Me.Label3.TabIndex = 1
     Me.Label3.Text = "クライアントID"
     '
     'ClientSecretTextBox
     '
-    Me.ClientSecretTextBox.Location = New System.Drawing.Point(123, 69)
+    Me.ClientSecretTextBox.Location = New System.Drawing.Point(91, 69)
     Me.ClientSecretTextBox.Name = "ClientSecretTextBox"
-    Me.ClientSecretTextBox.Size = New System.Drawing.Size(298, 19)
-    Me.ClientSecretTextBox.TabIndex = 5
+    Me.ClientSecretTextBox.Size = New System.Drawing.Size(374, 19)
+    Me.ClientSecretTextBox.TabIndex = 4
     '
     'AutoTranslationCheckBox
     '
@@ -82,16 +82,16 @@ Partial Class TranslationSettingForm
     Me.AutoTranslationCheckBox.Location = New System.Drawing.Point(12, 12)
     Me.AutoTranslationCheckBox.Name = "AutoTranslationCheckBox"
     Me.AutoTranslationCheckBox.Size = New System.Drawing.Size(253, 16)
-    Me.AutoTranslationCheckBox.TabIndex = 7
+    Me.AutoTranslationCheckBox.TabIndex = 0
     Me.AutoTranslationCheckBox.Text = "Microsoft Translator APIを使用して翻訳を行う"
     Me.AutoTranslationCheckBox.UseVisualStyleBackColor = True
     '
     'ClientIdTextBox
     '
-    Me.ClientIdTextBox.Location = New System.Drawing.Point(123, 44)
+    Me.ClientIdTextBox.Location = New System.Drawing.Point(91, 44)
     Me.ClientIdTextBox.Name = "ClientIdTextBox"
-    Me.ClientIdTextBox.Size = New System.Drawing.Size(298, 19)
-    Me.ClientIdTextBox.TabIndex = 8
+    Me.ClientIdTextBox.Size = New System.Drawing.Size(374, 19)
+    Me.ClientIdTextBox.TabIndex = 2
     '
     'TranslationSettingForm
     '
