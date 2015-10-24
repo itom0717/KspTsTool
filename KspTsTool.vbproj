@@ -80,7 +80,7 @@
   <ItemGroup>
     <Compile Include="PartsInfo\PartInfo.vb" />
     <Compile Include="PartsInfo\PartInfoList.vb" />
-    <Compile Include="PartsInfo\TranslationSetting.vb" />
+    <Compile Include="Form\TranslationSetting.vb" />
     <Compile Include="Common\File.vb" />
     <Compile Include="Common\HashtableEx.vb" />
     <Compile Include="Form\FormMain.Designer.vb">
@@ -110,6 +110,8 @@
     <Compile Include="Form\TranslationSettingForm.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ScienceDefsInfo\ScienceDefsInfo.vb" />
+    <Compile Include="ScienceDefsInfo\ScienceDefsInfoList.vb" />
     <Compile Include="Translation\AdmAccessToken.vb" />
     <Compile Include="Translation\AdmAuthentication.vb" />
     <Compile Include="Translation\TranslationDataBase.vb" />

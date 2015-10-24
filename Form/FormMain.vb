@@ -11,6 +11,14 @@ Public Class FormMain
   ''' </summary>
   Private ImportTranslationFilrPath As String = ""
 
+  'Partsフォルダ名
+  Public Const PartsFolder As String = "Parts"
+
+  'Resourcesフォルダ名
+  Public Const ResourcesFolder As String = "Resources"
+
+  'ScienceDefs.cfgファイル名
+  Public Const ScienceDefsFilename As String = "ScienceDefs.cfg"
 
   ''' <summary>
   ''' FormMain_Load
@@ -443,6 +451,7 @@ Public Class FormMain
     End If
 
 
+
     Try
 
       '翻訳DB読込
@@ -460,7 +469,9 @@ Public Class FormMain
           'ディレクトリ名
           Dim dirName As String = Common.File.GetFileName(Common.File.DeleteDirectorySeparator(dirList(i)))
           'Partsフォルダ
-          Dim partDir As String = Common.File.AddDirectorySeparator(Common.File.AddDirectorySeparator(dirList(i)) & "Parts")
+          Dim partDir As String = Common.File.AddDirectorySeparator(Common.File.AddDirectorySeparator(dirList(i)) & partsFolder)
+          'Resourcesフォルダ
+          Dim resourcesDir As String = Common.File.AddDirectorySeparator(Common.File.AddDirectorySeparator(dirList(i)) & resourcesFolder)
 
           If dirName.Equals("ToJPparts", StringComparison.CurrentCultureIgnoreCase) Then
             '登録しない
@@ -468,10 +479,14 @@ Public Class FormMain
             '登録しない
           ElseIf dirName.Equals("") Then
             '登録しない
-          ElseIf Not Common.File.ExistsDirectory(partDir) Then
-            'Partsフォルダがない場合は登録しない
-          Else
+          ElseIf Common.File.ExistsDirectory(partDir) Then
+            'Partsフォルダは登録
             execDirList.Add(dirList(i))
+          ElseIf Common.File.ExistsDirectory(resourcesDir) Then
+            'Resourcesフォルダがあれば登録
+            execDirList.Add(dirList(i))
+          Else
+            '登録しない
           End If
         Next
       End With
@@ -491,7 +506,10 @@ Public Class FormMain
           'ディレクトリ名
           Dim dirName As String = Common.File.GetFileName(Common.File.DeleteDirectorySeparator(execDirList(i)))
           'Partsフォルダ
-          Dim partDir As String = Common.File.AddDirectorySeparator(Common.File.AddDirectorySeparator(execDirList(i)) & "Parts")
+          Dim partDir As String = Common.File.AddDirectorySeparator(Common.File.AddDirectorySeparator(execDirList(i)) & partsFolder)
+          'Resourcesフォルダ
+          Dim resourcesDir As String = Common.File.AddDirectorySeparator(Common.File.AddDirectorySeparator(execDirList(i)) & resourcesFolder)
+
 
           '処理状況の表示を変更する
           progressText = "[ " & dirName & " ]"
@@ -506,69 +524,170 @@ Public Class FormMain
           End If
 
           With Nothing
-            'パーツ情報クラスを定義
-            Dim partInfoList As New PartInfoList(Common.File.AddDirectorySeparator(translationSetting.DsgtPath) & dirName & ".cfg")
+            'Partsフォルダ内の*.cfgを列挙
+            Dim partCfgList As New List(Of String)
+            If Common.File.ExistsDirectory(partDir) Then
+              partCfgList = Common.File.GetFileList(partDir, "*.cfg", True)
+            End If
 
-            'フォルダ内の*.cfgを列挙
-            Dim cfgList As List(Of String) = Common.File.GetFileList(partDir, "*.cfg", True)
-            If cfgList.Count = 0 Then
-              'ファイル無しは次へ
+            'Resourcesフォルダ内のScienceDefs.cfgを列挙
+            Dim scienceDefsList As New List(Of String)
+            If Common.File.ExistsDirectory(resourcesDir) Then
+              scienceDefsList = Common.File.GetFileList(resourcesDir, scienceDefsFilename, False)
+            End If
+
+            If partCfgList.Count = 0 AndAlso scienceDefsList.Count = 0 Then
+              'ファイル無しは次のフォルダへ
               Continue For
             End If
 
-            'cgfを順番に処理
-            progressRatioSub = CDbl((progressRatio / 2.0) / cfgList.Count)
-            For j As Integer = 0 To cfgList.Count - 1
-              Dim cfgFile As String = cfgList(j)
 
-              '処理状況の表示を変更する
-              progressNow += progressRatioSub
-              bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- cfgファイル調査中(" & (j + 1) & "/" & cfgList.Count & ")...")
+            'パーツ情報
+            With Nothing
 
-              'キャンセルされたか調べる
-              If bw.CancellationPending Then
-                'キャンセルされたとき
-                e.Cancel = True
-                Return
-              End If
+              'パーツ情報クラスを定義
+              Dim partInfoList As New PartInfoList(Common.File.AddDirectorySeparator(translationSetting.DsgtPath) & dirName & ".cfg")
 
-              'cfgファイルから情報取得
-              Dim partInfo As New PartInfo(cfgFile)
-              If Not partInfo.NoPartData Then
-                '情報が取得できたらpartInfoListに追加する
-                partInfoList.Add(partInfo)
-              End If
-            Next
+              'cgfを順番に処理
+              progressRatioSub = CDbl((progressRatio * 0.45) / partCfgList.Count)
+              For j As Integer = 0 To partCfgList.Count - 1
+                Dim cfgFile As String = partCfgList(j)
 
+                '処理状況の表示を変更する
+                progressNow += progressRatioSub
+                bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- パーツcfgファイル調査中(" & (j + 1) & "/" & partCfgList.Count & ")...")
 
-            '翻訳処理
-            progressRatioSub = CDbl((progressRatio / 2.0) / partInfoList.Count)
-            For j As Integer = 0 To partInfoList.Count - 1
-              Dim partInfo As PartInfo = partInfoList(j)
+                'キャンセルされたか調べる
+                If bw.CancellationPending Then
+                  'キャンセルされたとき
+                  e.Cancel = True
+                  Return
+                End If
 
-              '処理状況の表示を変更する
-              progressNow += progressRatioSub
-              bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- 翻訳中(" & (j + 1) & "/" & partInfoList.Count & ")...")
-
-              'キャンセルされたか調べる
-              If bw.CancellationPending Then
-                'キャンセルされたとき
-                e.Cancel = True
-                Return
-              End If
+                'cfgファイルから情報取得
+                Dim partInfo As New PartInfo(cfgFile)
+                If Not partInfo.NoPartData Then
+                  '情報が取得できたらpartInfoListに追加する
+                  partInfoList.Add(partInfo)
+                End If
+              Next
 
               '翻訳処理
-              partInfo.DescriptionJapanese = translationDataBase.Translate(dirName,
-                                                                           partInfo.Name,
-                                                                           partInfo.Title,
-                                                                           partInfo.Description)
-            Next
+              progressRatioSub = CDbl((progressRatio * 0.45) / partInfoList.Count)
+              For j As Integer = 0 To partInfoList.Count - 1
+                Dim partInfo As PartInfo = partInfoList(j)
+
+                '処理状況の表示を変更する
+                progressNow += progressRatioSub
+                bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- パーツ説明文を翻訳中(" & (j + 1) & "/" & partInfoList.Count & ")...")
+
+                'キャンセルされたか調べる
+                If bw.CancellationPending Then
+                  'キャンセルされたとき
+                  e.Cancel = True
+                  Return
+                End If
+
+                '翻訳処理
+                partInfo.DescriptionJapanese = translationDataBase.Translate(dirName,
+                                                                             partInfo.Name,
+                                                                             partInfo.Title,
+                                                                             partInfo.Description)
+              Next
 
 
-            If partInfoList.Count >= 1 Then
-              'データがあれば翻訳パッチファイルに保存する
-              partInfoList.Save()
-            End If
+              If partInfoList.Count >= 1 Then
+                'データがあれば Module Manager用cfgファイルに保存する
+                partInfoList.Save()
+              End If
+            End With
+
+
+
+
+
+
+
+            'ScienceDefs情報
+            With Nothing
+              'scienceDefsL情報クラスを定義
+              Dim scienceDefsInfoList As New ScienceDefsInfoList(Common.File.AddDirectorySeparator(translationSetting.DsgtPath) & dirName & "_ScienceDefs" & ".cfg")
+
+              'cgfを順番に処理(といっても0個か1個のどちらか)
+              progressRatioSub = CDbl((progressRatio * 0.05) / scienceDefsList.Count)
+              For j As Integer = 0 To scienceDefsList.Count - 1
+                Dim cfgFile As String = scienceDefsList(j)
+
+                '処理状況の表示を変更する
+                progressNow += progressRatioSub
+                bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- ScienceDefs.cfgファイル調査中...")
+
+                'キャンセルされたか調べる
+                If bw.CancellationPending Then
+                  'キャンセルされたとき
+                  e.Cancel = True
+                  Return
+                End If
+
+                'cfgファイルから情報取得
+                Dim scienceDefsInfo As New ScienceDefsInfo(cfgFile)
+                If Not scienceDefsInfo.NoExpDefData Then
+                  '情報が取得できたらscienceDefsInfoListに追加する
+                  scienceDefsInfoList.Add(scienceDefsInfo)
+                End If
+
+              Next
+
+
+
+              '翻訳処理
+              progressRatioSub = CDbl((progressRatio * 0.05) / scienceDefsList.Count)
+              For j As Integer = 0 To scienceDefsInfoList.Count - 1
+                Dim scienceDefsInfo As ScienceDefsInfo = scienceDefsInfoList(j)
+
+                '処理状況の表示を変更する"
+                Dim progressTextExpDefData As String = progressText & " --- ScienceDefs.cfgを翻訳中"
+                progressNow += progressRatioSub
+
+
+                Dim count As Integer = 0
+                For Each expDefData As ScienceDefsInfo.ExpDefData In scienceDefsInfo.ExpDefDataList
+                  For Each resultData As ScienceDefsInfo.ResultData In expDefData.Result
+
+                    bw.ReportProgress(CInt(progressNow * 100.0), progressTextExpDefData & "(" & count & ")" & "...")
+
+                    'キャンセルされたか調べる
+                    If bw.CancellationPending Then
+                      'キャンセルされたとき
+                      e.Cancel = True
+                      Return
+                    End If
+
+
+                    '翻訳処理
+                    resultData.MessageJapanese = translationDataBase.Translate(dirName & "\" & ScienceDefsFilename,
+                                                                               expDefData.ID & "\" & resultData.KeyText & "\" & resultData.KeyIndex,
+                                                                               expDefData.Title,
+                                                                               resultData.MessageOriginal)
+                    count += 1
+                  Next
+                Next
+
+
+              Next
+
+
+
+
+
+              If scienceDefsInfoList.Count >= 1 Then
+                'データがあれば Module Manager用cfgファイルに保存する
+                scienceDefsInfoList.Save()
+              End If
+            End With
+
+
+
           End With
 
         Next

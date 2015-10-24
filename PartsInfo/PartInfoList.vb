@@ -5,16 +5,16 @@ Public Class PartInfoList
   Inherits List(Of PartInfo)
 
   ''' <summary>
-  ''' 保存ファイル名
+  '''  Module Manager用cfgファイル名
   ''' </summary>
-  Private Property TranslationFilename As String = ""
+  Private Property ModuleManagerConfigFilename As String = ""
 
   ''' <summary>
   ''' インスタンスを生成
   ''' </summary>
-  ''' <param name="translationFilename"></param>
-  Public Sub New(translationFilename As String)
-    Me.TranslationFilename = translationFilename
+  ''' <param name="moduleManagerConfigFilename"></param>
+  Public Sub New(moduleManagerConfigFilename As String)
+    Me.ModuleManagerConfigFilename = moduleManagerConfigFilename
   End Sub
 
   ''' <summary>
@@ -26,7 +26,7 @@ Public Class PartInfoList
   ''' </remarks>
   Public Sub Save()
 
-    Using sw As New System.IO.StreamWriter(Me.TranslationFilename, False, System.Text.Encoding.UTF8)
+    Using sw As New System.IO.StreamWriter(Me.ModuleManagerConfigFilename, False, System.Text.Encoding.UTF8)
 
       '部品数分ループ
       For Each partInfo As PartInfo In Me

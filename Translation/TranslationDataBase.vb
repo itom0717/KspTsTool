@@ -382,8 +382,27 @@ Public Class TranslationDataBase
               "@description\s*=\s*([^}]+)($|})",
               System.Text.RegularExpressions.RegexOptions.IgnoreCase)
 
+
+      Dim rExpDef As New System.Text.RegularExpressions.Regex(
+          "^@EXPERIMENT_DEFINITION\s*:\s*HAS\[\s*#id\[\s*([^\}]+)\s*\]\s*\]($|{|\s)",
+          System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+
+      Dim rResult As New System.Text.RegularExpressions.Regex(
+          "^@RESULTS($|{|\s)",
+          System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+
+      Dim rKeyText As New System.Text.RegularExpressions.Regex(
+            "^@([^=,]+),(\d+)\s*=\s*(.+)",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+
+
+
+
+
       Dim mc As System.Text.RegularExpressions.MatchCollection
       Dim part As String = ""
+      Dim expDef As String = ""
+
       Dim description As String = ""
       Dim check As New Hashtable
 
@@ -396,6 +415,12 @@ Public Class TranslationDataBase
         Dim nestLevel As Integer = 0
         Dim isPart As Boolean = False 'Partの中
         Dim isPartEnter As Boolean = False 'partの中に入った
+        Dim isExpDef As Boolean = False 'EXPERIMENT_DEFINITIONの中
+        Dim isExpDefEnter As Boolean = False 'EXPERIMENT_DEFINITIONの中に入った
+        Dim isResult As Boolean = False 'Resultの中
+        Dim isResultEnter As Boolean = False 'Resultの中に入った
+
+
 
         While sr.Peek() > -1
           Dim line As String = sr.ReadLine()
@@ -424,6 +449,27 @@ Public Class TranslationDataBase
             End If
           End If
 
+
+          '@EXPERIMENT_DEFINITION:HAS[#id[***]]
+          mc = rExpDef.Matches(line)
+          If mc.Count >= 1 Then
+            expDef = mc(0).Groups(1).Value
+            If Not isExpDef AndAlso nestLevel = 0 AndAlso Not expDef.Equals("") Then
+              'EXPERIMENT_DEFINITIONの中に入った
+              isExpDef = True
+              isExpDefEnter = False
+              isResult = False
+              isResultEnter = False
+            End If
+          End If
+
+          'Result判定
+          If Not isResult AndAlso nestLevel = 1 AndAlso rResult.IsMatch(line) Then
+            isResult = True
+            isResultEnter = False
+          End If
+
+
           '括弧のネスト判定
           For i As Integer = 0 To line.Length - 1
             If line.Substring(i, 1).Equals("{") Then
@@ -443,31 +489,36 @@ Public Class TranslationDataBase
 
               If Not part.Equals("") AndAlso Not check.ContainsKey(part) Then
                 check.Add(part, 1) '同じ名前のものは取り込まない
-
-                Dim selectRow() As DataRow = Me.TranslationDataTable.Select(TranslationDataTable.ColumnNamePartName & "='" & Me.DoubleSiglQrt(part) & "'")
-                If selectRow.Count > 0 Then
-                  For i As Integer = 0 To selectRow.Count - 1
-                    '加工
-                    If description.Substring(0, 1).Equals("""") _
-                        AndAlso description.Substring(description.Length - 1, 1).Equals("""") Then
-                      description = description.Substring(1, description.Length - 2)
-                    End If
-                    If description.Substring(description.Length - 2, 2).Equals("。。") Then
-                      description = description.Substring(0, description.Length - 1)
-                    End If
-
-                    If Not description.Equals(CStr(selectRow(i)(TranslationDataTable.ColumnNameJapaneseText))) Then
-                      selectRow(i)(TranslationDataTable.ColumnNameJapaneseText) = description
-                      selectRow(i)(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoImportTextFormat)
-                    End If
-                  Next
-                End If
-
-
+                Me.UpdateTranslateDatabaseForImportModuleManagerCfg(part, description)
               End If
 
             End If
 
+          End If
+
+
+          If isExpDef AndAlso nestLevel = 1 Then
+            isExpDefEnter = True 'EXPERIMENT_DEFINITIONの中に入った
+          End If
+          If isResult AndAlso nestLevel = 2 Then
+            isResultEnter = True 'sResultの中に入った
+
+
+
+            '@default,0 = *******
+            mc = rKeyText.Matches(line)
+            If mc.Count >= 1 Then
+
+              Dim key As String = expDef & "\" & mc(0).Groups(1).Value & "\" & mc(0).Groups(2).Value
+              description = mc(0).Groups(3).Value.Trim()
+
+              If Not key.Equals("") AndAlso Not check.ContainsKey(key) Then
+                check.Add(key, 1) '同じ名前のものは取り込まない
+                Me.UpdateTranslateDatabaseForImportModuleManagerCfg(key, description)
+              End If
+
+
+            End If
           End If
 
 
@@ -482,6 +533,18 @@ Public Class TranslationDataBase
             'PARTの外にでた
             isPart = False
             isPartEnter = False
+          End If
+
+          If isResultEnter AndAlso nestLevel = 1 Then
+            'Resultの外にでた
+            isResult = False
+            isResultEnter = False
+          End If
+
+          If isExpDefEnter AndAlso nestLevel = 0 Then
+            'EXPERIMENT_DEFINITIONの外にでた
+            isExpDef = False
+            isExpDefEnter = False
           End If
 
         End While
@@ -506,6 +569,37 @@ Public Class TranslationDataBase
     End Try
 
   End Function
+
+
+  ''' <summary>
+  ''' インポート用DB更新
+  ''' </summary>
+  Private Sub UpdateTranslateDatabaseForImportModuleManagerCfg(idKey As String, description As String)
+
+
+    Dim selectRow() As DataRow = Me.TranslationDataTable.Select(TranslationDataTable.ColumnNamePartName & "='" & Me.DoubleSiglQrt(idKey) & "'")
+    If selectRow.Count > 0 Then
+      For i As Integer = 0 To selectRow.Count - 1
+        '加工
+        If description.Substring(0, 1).Equals("""") _
+                        AndAlso description.Substring(description.Length - 1, 1).Equals("""") Then
+          description = description.Substring(1, description.Length - 2)
+        End If
+        If description.Substring(description.Length - 2, 2).Equals("。。") Then
+          description = description.Substring(0, description.Length - 1)
+        End If
+
+        If Not description.Equals(CStr(selectRow(i)(TranslationDataTable.ColumnNameJapaneseText))) Then
+          selectRow(i)(TranslationDataTable.ColumnNameJapaneseText) = description
+          selectRow(i)(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoImportTextFormat)
+        End If
+      Next
+    End If
+
+
+  End Sub
+
+
 
 
   ''' <summary>
@@ -631,7 +725,9 @@ Public Class TranslationDataBase
   ''' <returns></returns>
   ''' <remarks></remarks>
   Private Function DoubleSiglQrt(ByVal text As String) As String
-    Return text.Replace("'", "''")
+    Dim returnValue As String = text
+    returnValue = returnValue.Replace("'", "''")
+    Return returnValue
   End Function
 
 
