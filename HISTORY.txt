@@ -1,3 +1,7 @@
+Ver 1.5.0.0
+  2015/10/24 パーツcfgファイルをPartsフォルダ以外でも取得するように変更
+             ScienceDefs.cfgもResourcesフォルダ以外でも取得するように変更
+  
 Ver 1.4.0.0
   2015/10/23 ScienceDefs.cfgに対応
 

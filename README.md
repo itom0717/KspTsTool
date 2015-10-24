@@ -2,7 +2,9 @@ Kerbal Space Program Translation Support Tool
 ====
 
 このプログラムは Kerbal Space Program のPart(MODにも対応)および ScienceDefs.cfg(MODも対応)の説明文を抽出し、Microsoft Translator APIを使用して自動で機械翻訳します。  
- ModuleManager.dll で使用するcfgファイルを作成します。
+ModuleManager.dll で使用するcfgファイルを作成します。  
+
+###※Kerbal Space Program本体のファイルは変更しません。ModuleManager.dll用のConfigファイルを作成するだけです。
 
 
 ## 開発環境
