@@ -17,7 +17,8 @@ ModuleManager.dll で使用するcfgファイルを作成します。
 
 ###事前準備  
 自動翻訳させる場合はMicrosoft Translator APIの「クライアントID」と「顧客の秘密」を取得する必要があります。  
-※Windows Azure Marketplaceへ登録等が必要です。(有料版もありますが、無料版でOK） 
+※Windows Azure Marketplaceへ登録等が必要です。(有料版もありますが、無料版でOK）   
+※自力で翻訳する場合で英語文章の抽出のみでしたら、IDの登録は不要です。  
 
 
 ###実行方法  
@@ -34,13 +35,13 @@ ModuleManager.dll で使用するcfgファイルを作成します。
 
 　　Kerbal Space Program  
 　　　　　+--- GameData  
-   　　　　　+--- Squad  
-   　　　　　+--- (各MODのフォルダ)   
-   　　　　　+---  ・  
-   　　　　　+---  ・  
-   　　　　　+---  ・  
-   　　　　　+--- ModuleManager.dll <--- を設置  
-   　　　　　+--- ToJapanese  <--- 任意のフォルダを作成し、この中に ②のフォルダ内に作成されたファイルを入れる  
+　　　　　　　+--- Squad  
+　　　　　　　+--- (各MODのフォルダ)   
+　　　　　　　+---  ・  
+　　　　　　　+---  ・  
+　　　　　　　+---  ・  
+　　　　　　　+--- ModuleManager.dll <--- を設置  
+　　　　　　　+--- @ToJapanese  <--- 任意のフォルダを作成し、この中に ②のフォルダ内に作成されたファイルを入れる  
   
 
 

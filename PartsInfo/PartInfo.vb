@@ -11,33 +11,49 @@ Public Class PartInfo
   ''' </returns>
   Public ReadOnly Property NoPartData As Boolean
     Get
-      Return (IsNothing(Me.Name) OrElse Me.Name.Equals(""))
+      Return (Me.PartInfoDataList.Count = 0)
     End Get
   End Property
 
-  ''' <summary>
-  ''' Name
-  ''' </summary>
-  ''' <returns></returns>
-  Public Property Name As String = Nothing
+
 
   ''' <summary>
-  ''' Title
+  ''' パーツ情報
   ''' </summary>
-  ''' <returns></returns>
-  Public Property Title As String = Nothing
+  Public Class PartInfoData
+
+    ''' <summary>
+    ''' Name
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property Name As String = Nothing
+
+    ''' <summary>
+    ''' Title
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property Title As String = Nothing
+
+    ''' <summary>
+    ''' Description
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property Description As String = Nothing
+
+    ''' <summary>
+    ''' Description Japanese
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property DescriptionJapanese As String = Nothing
+
+  End Class
+
 
   ''' <summary>
-  ''' Description
+  ''' PartInfoデータ
   ''' </summary>
-  ''' <returns></returns>
-  Public Property Description As String = Nothing
+  Public PartInfoDataList As New List(Of PartInfoData)
 
-  ''' <summary>
-  ''' Description Japanese
-  ''' </summary>
-  ''' <returns></returns>
-  Public Property DescriptionJapanese As String = Nothing
 
 
   ''' <summary>
@@ -75,11 +91,8 @@ Public Class PartInfo
 
       Dim mc As System.Text.RegularExpressions.MatchCollection
 
+      Me.PartInfoDataList.Clear()
 
-      Me.Name = Nothing
-      Me.Title = Nothing
-      Me.Description = Nothing
-      Me.DescriptionJapanese = Nothing
 
       '各cfgファイルの解析
       Using sr As New System.IO.StreamReader(partCfgFilename, System.Text.Encoding.UTF8)
@@ -87,6 +100,9 @@ Public Class PartInfo
         Dim nestLevel As Integer = 0
         Dim isPart As Boolean = False 'Partの中
         Dim isPartEnter As Boolean = False 'partの中に入った
+
+
+        Dim partInfoData As PartInfoData = Nothing
 
         While sr.Peek() > -1
           Dim line As String = sr.ReadLine()
@@ -105,6 +121,9 @@ Public Class PartInfo
           If Not isPart AndAlso nestLevel = 0 AndAlso rPart.IsMatch(line) Then
             isPart = True
             isPartEnter = False
+
+            partInfoData = New PartInfoData
+
           End If
 
 
@@ -120,33 +139,27 @@ Public Class PartInfo
           If isPart AndAlso nestLevel = 1 Then
             isPartEnter = True 'partの中に入った
 
-            If IsNothing(Me.Name) Then '最初の１回のみ
+            If IsNothing(partInfoData.Name) Then '最初の１回のみ
               mc = rName.Matches(line)
               If mc.Count >= 1 Then
-                Me.Name = mc(0).Groups(1).Value
+                partInfoData.Name = mc(0).Groups(1).Value
               End If
             End If
 
-            If IsNothing(Me.Title) Then '最初の１回のみ
+            If IsNothing(partInfoData.Title) Then '最初の１回のみ
               mc = rTitle.Matches(line)
               If mc.Count >= 1 Then
-                Me.Title = mc(0).Groups(1).Value
+                partInfoData.Title = mc(0).Groups(1).Value
               End If
             End If
 
-            If IsNothing(Me.Description) Then '最初の１回のみ
+            If IsNothing(partInfoData.Description) Then '最初の１回のみ
               mc = rDescription.Matches(line)
               If mc.Count >= 1 Then
-                Me.Description = mc(0).Groups(1).Value
+                partInfoData.Description = mc(0).Groups(1).Value
               End If
             End If
 
-            If Not IsNothing(Me.Name) _
-              AndAlso Not IsNothing(Me.Title) _
-              AndAlso Not IsNothing(Me.Description) Then
-              '全部取得したら抜ける
-              Exit While
-            End If
 
           End If
 
@@ -162,11 +175,17 @@ Public Class PartInfo
             'PARTの外にでた
             isPart = False
             isPartEnter = False
-            Exit While
+
+            If Not IsNothing(partInfoData) AndAlso Not IsNothing(partInfoData.Name) AndAlso Not partInfoData.Name.Equals("") Then
+              Me.PartInfoDataList.Add(partInfoData)
+            End If
+            partInfoData = Nothing
+
           End If
 
 
         End While
+
 
         '閉じる
         sr.Close()

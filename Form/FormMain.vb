@@ -159,18 +159,18 @@ Public Class FormMain
 
     If path.Equals("") Then
       MessageBox.Show("フォルダを選択してください。",
-                      My.Application.Info.ProductName,
-                      MessageBoxButtons.OK,
-                      MessageBoxIcon.Information)
+                        My.Application.Info.ProductName,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information)
       Return
     End If
 
     path = Common.File.AddDirectorySeparator(path)
     If Not Common.File.ExistsDirectory(path) Then
       MessageBox.Show("存在しないフォルダです。",
-                My.Application.Info.ProductName,
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information)
+                  My.Application.Info.ProductName,
+                  MessageBoxButtons.OK,
+                  MessageBoxIcon.Information)
       Return
     End If
 
@@ -179,9 +179,9 @@ Public Class FormMain
       System.Diagnostics.Process.Start(path)
     Catch ex As Exception
       MessageBox.Show("フォルダを開くことができません。",
-          My.Application.Info.ProductName,
-          MessageBoxButtons.OK,
-          MessageBoxIcon.Error)
+            My.Application.Info.ProductName,
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error)
       Return
     End Try
   End Sub
@@ -197,7 +197,7 @@ Public Class FormMain
 
     '記憶されているフォルダのチェック
     If Me.ImportTranslationFilrPath.Equals("") _
-      OrElse Not Common.File.ExistsDirectory(Me.ImportTranslationFilrPath) Then
+        OrElse Not Common.File.ExistsDirectory(Me.ImportTranslationFilrPath) Then
       '未設定or存在しないので、デスクトップを初期値として設定
       Me.ImportTranslationFilrPath = Common.File.GetDesktopDirectory
     End If
@@ -257,15 +257,15 @@ Public Class FormMain
         msg = "取り込むデータはありませんでした。"
       End If
       MessageBox.Show(msg,
-                      My.Application.Info.ProductName,
-                      MessageBoxButtons.OK,
-                      MessageBoxIcon.Information)
+                        My.Application.Info.ProductName,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information)
 
     Catch ex As Exception
       MessageBox.Show(ex.Message,
-                My.Application.Info.ProductName,
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error)
+                  My.Application.Info.ProductName,
+                  MessageBoxButtons.OK,
+                  MessageBoxIcon.Error)
     End Try
 
   End Sub
@@ -291,9 +291,9 @@ Public Class FormMain
 
     '実行確認
     If MessageBox.Show("処理を実行しますか？",
-                       My.Application.Info.ProductName,
-                       MessageBoxButtons.OKCancel,
-                       MessageBoxIcon.Question) <> DialogResult.OK Then
+                         My.Application.Info.ProductName,
+                         MessageBoxButtons.OKCancel,
+                         MessageBoxIcon.Question) <> DialogResult.OK Then
       Return
     End If
 
@@ -309,7 +309,7 @@ Public Class FormMain
         translationSetting.MicrosoftTranslatorAPIClientId = My.Settings.MicrosoftTranslatorAPIClientId
         translationSetting.MicrosoftTranslatorAPIClientSecret = My.Settings.MicrosoftTranslatorAPIClientSecret
         If translationSetting.MicrosoftTranslatorAPIClientId.Trim.Equals("") _
-          OrElse translationSetting.MicrosoftTranslatorAPIClientSecret.Trim.Equals("") Then
+            OrElse translationSetting.MicrosoftTranslatorAPIClientSecret.Trim.Equals("") Then
           'ClientIdまたはClientSecretが指定していない場合は、自動翻訳無効
           translationSetting.IsTranslation = False
         End If
@@ -330,9 +330,9 @@ Public Class FormMain
         If Not errMsg.Equals("") Then
           '設定値にエラーが有る場合エラーを表示してここで戻る
           MessageBox.Show(errMsg,
-                          My.Application.Info.ProductName,
-                          MessageBoxButtons.OK,
-                          MessageBoxIcon.Information)
+                            My.Application.Info.ProductName,
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information)
           Return
         End If
       End With
@@ -340,9 +340,9 @@ Public Class FormMain
       If Not Common.File.IsEmptyDirectory(translationSetting.DsgtPath) Then
 
         If MessageBox.Show("保存先のフォルダにファイルが存在しますが続行しますか？",
-                   My.Application.Info.ProductName,
-                   MessageBoxButtons.OKCancel,
-                   MessageBoxIcon.Question) <> DialogResult.OK Then
+                     My.Application.Info.ProductName,
+                     MessageBoxButtons.OKCancel,
+                     MessageBoxIcon.Question) <> DialogResult.OK Then
           Return
         End If
 
@@ -368,9 +368,9 @@ Public Class FormMain
     Catch ex As Exception
       'エラーが出たら終了
       MessageBox.Show(ex.Message,
-                      My.Application.Info.ProductName,
-                      MessageBoxButtons.OK,
-                      MessageBoxIcon.Error)
+                        My.Application.Info.ProductName,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error)
       Me.Close()
     End Try
 
@@ -406,9 +406,9 @@ Public Class FormMain
   Private Function ConfirmCancel() As Boolean
 
     If MessageBox.Show("中止しますか？",
-                       My.Application.Info.ProductName,
-                       MessageBoxButtons.OKCancel,
-                       MessageBoxIcon.Question) <> DialogResult.OK Then
+                         My.Application.Info.ProductName,
+                         MessageBoxButtons.OKCancel,
+                         MessageBoxIcon.Question) <> DialogResult.OK Then
 
       Return False
     End If
@@ -439,7 +439,7 @@ Public Class FormMain
     Dim translationDataBase As TranslationDataBase
     If translationSetting.IsTranslation Then
       translationDataBase = New TranslationDataBase(translationSetting.MicrosoftTranslatorAPIClientId,
-                                                    translationSetting.MicrosoftTranslatorAPIClientSecret)
+                                                      translationSetting.MicrosoftTranslatorAPIClientSecret)
     Else
       translationDataBase = New TranslationDataBase()
     End If
@@ -466,9 +466,9 @@ Public Class FormMain
         Dim dirName As String = Common.File.GetFileName(Common.File.DeleteDirectorySeparator(execDirList(i)))
 
         '処理状況の表示を変更する
-        progressText = "[ " & dirName & " ]"
+        progressText = "[ " & dirName & " ]" & " (" & i + 1 & "/" & execDirList.Count & ")"
         progressNow = CDbl(progressRatio * i)
-        bw.ReportProgress(CInt(progressNow * 100.0), progressText & "を処理中...")
+        bw.ReportProgress(CInt(progressNow * 100.0), progressText & "の処理中...")
 
         'キャンセルされたか調べる
         If bw.CancellationPending Then
@@ -478,6 +478,7 @@ Public Class FormMain
         End If
 
         'フォルダ内の*.cfgを列挙
+        bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- cfg ファイルを検索中...")
         Dim cfgList As List(Of String) = Common.File.GetFileList(execDirList(i), "*.cfg", True)
         If cfgList.Count = 0 Then
           'ファイル無しは次のフォルダへ
@@ -493,13 +494,13 @@ Public Class FormMain
 
         'cgfを順番に処理
         With Nothing
-          progressRatioSub = CDbl((progressRatio * 0.5) / cfgList.Count)
+          progressRatioSub = CDbl((progressRatio * 0.4) / cfgList.Count)
           For j As Integer = 0 To cfgList.Count - 1
             Dim cfgFile As String = cfgList(j)
 
             '処理状況の表示を変更する
             progressNow += progressRatioSub
-            bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- cfgファイルの調査中(" & (j + 1) & "/" & cfgList.Count & ")...")
+            bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- cfg ファイルの調査中(" & (j + 1) & "/" & cfgList.Count & ")...")
 
             'キャンセルされたか調べる
             If bw.CancellationPending Then
@@ -526,28 +527,56 @@ Public Class FormMain
         End With
 
 
+
+        '処理件数を取得しておく
+        Dim totalTranslationCount As Integer = 0
+        Dim translationCount As Integer = 1
+        With Nothing
+          'パーツ
+          For j As Integer = 0 To partInfoList.Count - 1
+            totalTranslationCount += partInfoList(j).PartInfoDataList.Count
+          Next
+          'サイエンスレポート
+          For j As Integer = 0 To scienceDefsInfoList.Count - 1
+            For Each expDefData As ScienceDefsInfo.ExpDefData In scienceDefsInfoList(j).ExpDefDataList
+              totalTranslationCount += expDefData.Result.Count
+            Next
+          Next
+        End With
+        If totalTranslationCount <= 0 Then
+          '１件もないので、スキップ
+          Continue For
+        End If
+
+        ' ProgressBarの1件分の増加量
+        progressRatioSub = CDbl((progressRatio * 0.6) / totalTranslationCount)
+
         '翻訳処理(パーツ)
         With Nothing
-          progressRatioSub = CDbl((progressRatio * 0.4) / partInfoList.Count)
-          For j As Integer = 0 To partInfoList.Count - 1
-            Dim partInfo As PartInfo = partInfoList(j)
+          '処理状況の表示を変更する
+          Dim progressTextPartInfo As String = progressText & " --- パーツ説明文を翻訳中"
 
-            '処理状況の表示を変更する
-            progressNow += progressRatioSub
-            bw.ReportProgress(CInt(progressNow * 100.0), progressText & " --- パーツ説明文を翻訳中(" & (j + 1) & "/" & partInfoList.Count & ")...")
+          For Each partInfo As PartInfo In partInfoList
+            For Each partInfoData As PartInfo.PartInfoData In partInfo.PartInfoDataList
 
-            'キャンセルされたか調べる
-            If bw.CancellationPending Then
-              'キャンセルされたとき
-              e.Cancel = True
-              Return
-            End If
+              progressNow += progressRatioSub
+              bw.ReportProgress(CInt(progressNow * 100.0), progressTextPartInfo & "(" & translationCount & "/" & totalTranslationCount & ")" & "...")
 
-            '翻訳処理
-            partInfo.DescriptionJapanese = translationDataBase.Translate(dirName,
-                                                                                 partInfo.Name,
-                                                                                 partInfo.Title,
-                                                                                 partInfo.Description)
+              'キャンセルされたか調べる
+              If bw.CancellationPending Then
+                'キャンセルされたとき
+                e.Cancel = True
+                Return
+              End If
+
+              '翻訳処理
+              partInfoData.DescriptionJapanese = translationDataBase.Translate(dirName,
+                                                                               partInfoData.Name,
+                                                                               partInfoData.Title,
+                                                                               partInfoData.Description)
+
+              translationCount += 1
+            Next
           Next
           If partInfoList.Count >= 1 Then
             'データがあれば Module Manager用cfgファイルに保存する(パーツ)
@@ -559,20 +588,15 @@ Public Class FormMain
 
         '翻訳処理(サイエンスレポート)
         With Nothing
-          progressRatioSub = CDbl((progressRatio * 0.1) / scienceDefsInfoList.Count)
-          For j As Integer = 0 To scienceDefsInfoList.Count - 1
-            Dim scienceDefsInfo As ScienceDefsInfo = scienceDefsInfoList(j)
+          '処理状況の表示を変更する"
+          Dim progressTextExpDefData As String = progressText & " --- サイエンスレポートを翻訳中"
 
-            '処理状況の表示を変更する"
-            Dim progressTextExpDefData As String = progressText & " --- サイエンスレポートを翻訳中"
-            progressNow += progressRatioSub
-
-
-            Dim dataCount As Integer = 0
+          For Each scienceDefsInfo As ScienceDefsInfo In scienceDefsInfoList
             For Each expDefData As ScienceDefsInfo.ExpDefData In scienceDefsInfo.ExpDefDataList
               For Each resultData As ScienceDefsInfo.ResultData In expDefData.Result
 
-                bw.ReportProgress(CInt(progressNow * 100.0), progressTextExpDefData & "(" & dataCount & ")" & "...")
+                progressNow += progressRatioSub
+                bw.ReportProgress(CInt(progressNow * 100.0), progressTextExpDefData & "(" & translationCount & "/" & totalTranslationCount & ")" & "...")
 
                 'キャンセルされたか調べる
                 If bw.CancellationPending Then
@@ -581,23 +605,21 @@ Public Class FormMain
                   Return
                 End If
 
-
                 '翻訳処理
                 resultData.MessageJapanese = translationDataBase.Translate(dirName & "\" & ScienceDefsFilename,
-                                                                                   expDefData.ID & "\" & resultData.KeyText & "\" & resultData.KeyIndex,
-                                                                                   expDefData.Title,
-                                                                                   resultData.MessageOriginal)
-                dataCount += 1
+                                                                           expDefData.ID & "\" & resultData.KeyText & "\" & resultData.KeyIndex,
+                                                                           expDefData.Title,
+                                                                           resultData.MessageOriginal)
+                translationCount += 1
               Next
             Next
-
-
           Next
           If scienceDefsInfoList.Count >= 1 Then
             'データがあれば Module Manager用cfgファイルに保存する(サイエンスレポート)
             scienceDefsInfoList.Save()
           End If
         End With
+
 
       Next
 
@@ -644,9 +666,9 @@ Public Class FormMain
       Me.ProgressLabel.Text = "エラーが発生しました。"
 
       MessageBox.Show(e.Error.Message,
-                      My.Application.Info.ProductName,
-                      MessageBoxButtons.OK,
-                      MessageBoxIcon.Error)
+                        My.Application.Info.ProductName,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error)
 
     ElseIf e.Cancelled Then
 

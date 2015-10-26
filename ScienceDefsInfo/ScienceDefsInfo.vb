@@ -11,7 +11,7 @@ Public Class ScienceDefsInfo
   ''' </returns>
   Public ReadOnly Property NoExpDefData As Boolean
     Get
-      Return (ExpDefDataList.Count = 0)
+      Return (Me.ExpDefDataList.Count = 0)
     End Get
   End Property
 
@@ -175,9 +175,6 @@ Public Class ScienceDefsInfo
           'Name/Titleの取得
           If isExpDef AndAlso nestLevel = 1 Then
             isExpDefEnter = True 'EXPERIMENT_DEFINITIONの中に入った
-
-
-
 
             If IsNothing(expDefData.ID) Then '最初の１回のみ
               mc = rName.Matches(line)
