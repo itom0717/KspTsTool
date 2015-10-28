@@ -47,6 +47,15 @@ Public Class ScienceDefsInfo
     ''' <returns></returns>
     Public Property MessageJapanese As String = Nothing
 
+
+    ''' <summary>
+    ''' 備考
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property Memo As String = ""
+
+
+
   End Class
 
   ''' <summary>

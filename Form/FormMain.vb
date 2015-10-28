@@ -570,10 +570,15 @@ Public Class FormMain
               End If
 
               '翻訳処理
-              partInfoData.DescriptionJapanese = translationDataBase.Translate(dirName,
-                                                                               partInfoData.Name,
-                                                                               partInfoData.Title,
-                                                                               partInfoData.Description)
+
+
+              Dim translateResult As TranslationDataBase.TranslateResult _
+                                    = translationDataBase.Translate(dirName,
+                                                                    partInfoData.Name,
+                                                                    partInfoData.Title,
+                                                                    partInfoData.Description)
+              partInfoData.DescriptionJapanese = translateResult.JapaneseText
+              partInfoData.Memo = translateResult.Memo
 
               translationCount += 1
             Next
@@ -606,10 +611,15 @@ Public Class FormMain
                 End If
 
                 '翻訳処理
-                resultData.MessageJapanese = translationDataBase.Translate(dirName & "\" & ScienceDefsFilename,
-                                                                           expDefData.ID & "\" & resultData.KeyText & "\" & resultData.KeyIndex,
-                                                                           expDefData.Title,
-                                                                           resultData.MessageOriginal)
+                Dim translateResult As TranslationDataBase.TranslateResult _
+                        = translationDataBase.Translate(dirName & "\" & ScienceDefsFilename,
+                                                        expDefData.ID & "\" & resultData.KeyText & "\" & resultData.KeyIndex,
+                                                        expDefData.Title,
+                                                        resultData.MessageOriginal)
+
+                resultData.MessageJapanese = translateResult.JapaneseText
+                resultData.Memo = translateResult.Memo
+
                 translationCount += 1
               Next
             Next

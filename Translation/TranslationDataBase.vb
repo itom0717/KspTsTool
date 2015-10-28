@@ -599,6 +599,24 @@ Public Class TranslationDataBase
 
   End Sub
 
+  ''' <summary>
+  ''' 翻訳時の戻り値
+  ''' </summary>
+  Public Class TranslateResult
+
+    ''' <summary>
+    ''' 翻訳テキスト
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property JapaneseText As String = ""
+
+    ''' <summary>
+    ''' 備考
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property Memo As String = ""
+
+  End Class
 
 
 
@@ -608,18 +626,19 @@ Public Class TranslationDataBase
   Public Function Translate(dirName As String,
                             partName As String,
                             partTitle As String,
-                            srcText As String) As String
+                            srcText As String) As TranslateResult
+
+    Dim translateResult As New TranslateResult
 
     If dirName.Equals("") OrElse partName.Equals("") Then
-      Return ""
+      Return translateResult
     End If
     If IsNothing(srcText) OrElse srcText.Equals("") Then
-      Return ""
+      Return translateResult
     End If
 
 
 
-    Dim jpnText As String = ""
 
     Try
 
@@ -635,7 +654,8 @@ Public Class TranslationDataBase
                                     TranslationDataTable.ColumnNamePartName & "='" & Me.DoubleSiglQrt(partName) & "'")
       If selectRow.Count > 0 Then
         'データあり
-        jpnText = selectRow(0)(TranslationDataTable.ColumnNameJapaneseText).trim.ToString()
+        translateResult.JapaneseText = selectRow(0)(TranslationDataTable.ColumnNameJapaneseText).trim.ToString()
+        translateResult.Memo = selectRow(0)(TranslationDataTable.ColumnNameMemo).trim.ToString()
 
         'パーツタイトル変更されていたら変更する
         If Not partTitle.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNamePartTitle))) Then
@@ -645,35 +665,39 @@ Public Class TranslationDataBase
         '元テキスト変更の場合
         If Not srcText.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNameOriginalText))) Then
           '翻訳もののテキストと同じデータがあればそれを使用する
-          jpnText = Me.SearchSameText(srcText)
+          translateResult.JapaneseText = Me.SearchSameText(srcText)
           selectRow(0)(TranslationDataTable.ColumnNameOriginalText) = srcText
-        ElseIf jpnText.Equals("") Then
+        ElseIf translateResult.JapaneseText.Equals("") Then
           '元テキストが変更されていない場合+翻訳テキストが空欄
           '翻訳もののテキストと同じデータがあればそれを使用する
-          jpnText = Me.SearchSameText(srcText)
+          translateResult.JapaneseText = Me.SearchSameText(srcText)
         End If
 
-        If Not IsNothing(Me.TranslatorApi) AndAlso jpnText.Equals("") Then
+        If Not IsNothing(Me.TranslatorApi) AndAlso translateResult.JapaneseText.Equals("") Then
           '空欄の場合や元テキストが変更された場合は再翻訳
-          jpnText = Me.TranslatorApi.TranslateEnglishToJapanese(srcText)
+          translateResult.JapaneseText = Me.TranslatorApi.TranslateEnglishToJapanese(srcText)
         End If
 
-        If Not jpnText.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNameJapaneseText))) Then
-          selectRow(0)(TranslationDataTable.ColumnNameJapaneseText) = jpnText
-          selectRow(0)(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoChangeTextFormat)
+        If Not translateResult.JapaneseText.Equals(CStr(selectRow(0)(TranslationDataTable.ColumnNameJapaneseText))) Then
+          translateResult.Memo = Now.ToString(TranslationDataTable.MemoChangeTextFormat)
+          selectRow(0)(TranslationDataTable.ColumnNameJapaneseText) = translateResult.JapaneseText
+          selectRow(0)(TranslationDataTable.ColumnNameMemo) = translateResult.Memo
         End If
 
       Else
         'データ無し
-        jpnText = ""
+        translateResult.JapaneseText = ""
 
         '翻訳もののテキストと同じデータがあればそれを使用する
-        jpnText = Me.SearchSameText(srcText)
+        translateResult.JapaneseText = Me.SearchSameText(srcText)
 
         '自動翻訳
-        If jpnText.Equals("") AndAlso Not IsNothing(Me.TranslatorApi) Then
-          jpnText = Me.TranslatorApi.TranslateEnglishToJapanese(srcText)
+        If translateResult.JapaneseText.Equals("") AndAlso Not IsNothing(Me.TranslatorApi) Then
+          translateResult.JapaneseText = Me.TranslatorApi.TranslateEnglishToJapanese(srcText)
         End If
+
+
+        translateResult.Memo = Now.ToString(TranslationDataTable.MemoAddTextFormat)
 
         Dim newRow As DataRow = Me.TranslationDataTable.NewRow()
 
@@ -681,14 +705,19 @@ Public Class TranslationDataBase
         newRow(TranslationDataTable.ColumnNamePartTitle) = partTitle
         newRow(TranslationDataTable.ColumnNamePartName) = partName
         newRow(TranslationDataTable.ColumnNameOriginalText) = srcText
-        newRow(TranslationDataTable.ColumnNameJapaneseText) = jpnText
-        newRow(TranslationDataTable.ColumnNameMemo) = Now.ToString(TranslationDataTable.MemoAddTextFormat)
+        newRow(TranslationDataTable.ColumnNameJapaneseText) = translateResult.JapaneseText
+        newRow(TranslationDataTable.ColumnNameMemo) = translateResult.Memo
+
 
         Me.TranslationDataTable.Rows.Add(newRow)
 
+
+
       End If
 
-      Return jpnText
+
+
+      Return translateResult
 
     Catch ex As Exception
       Throw

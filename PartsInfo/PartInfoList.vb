@@ -49,7 +49,11 @@ Public Class PartInfoList
             sw.WriteLine("//  " & CStr(IIf(Not IsNothing(partInfoData.Title), partInfoData.Title, partInfoData.Name)))
             sw.WriteLine("//Original Text")
             sw.WriteLine("//  " & String.Format("@description = {0}", CStr(IIf(Not IsNothing(partInfoData.Description), partInfoData.Description, ""))))
-            sw.WriteLine("//Japanese Text")
+            If partInfoData.Memo.Equals("") Then
+              sw.WriteLine("//Japanese Text")
+            Else
+              sw.WriteLine("//Japanese Text ---- " & partInfoData.Memo)
+            End If
             If Not outputFlag Then
               sw.Write("//  ")
             Else

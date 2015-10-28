@@ -46,6 +46,12 @@ Public Class PartInfo
     ''' <returns></returns>
     Public Property DescriptionJapanese As String = Nothing
 
+    ''' <summary>
+    ''' 備考
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property Memo As String = ""
+
   End Class
 
 

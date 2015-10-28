@@ -53,7 +53,11 @@ Public Class ScienceDefsInfoList
 
               sw.WriteLine("    //Original Text")
               sw.WriteLine("    //  " & String.Format("@{0},{1} = {2}", resultData.KeyText, resultData.KeyIndex, CStr(IIf(Not IsNothing(resultData.MessageOriginal), resultData.MessageOriginal, ""))))
-              sw.WriteLine("    //Japanese Text")
+              If resultData.Memo.Equals("") Then
+                sw.WriteLine("    //Japanese Text")
+              Else
+                sw.WriteLine("    //Japanese Text ---- " & resultData.Memo)
+              End If
               If Not outputFlag Then
                 sw.Write("    //  ")
               Else
