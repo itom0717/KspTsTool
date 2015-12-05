@@ -43,7 +43,11 @@ Public Class PartInfoList
               outputFlag = False
             End If
 
-            sw.WriteLine(String.Format("@PART[{0}]", partInfoData.Name))
+            'スペースが含まれている場合は、？に変換
+            Dim partName As String = partInfoData.Name
+            partName = partName.Replace(" ", "?")
+
+            sw.WriteLine(String.Format("@PART[{0}]", partName))
             sw.WriteLine("{")
             sw.WriteLine("//Title")
             sw.WriteLine("//  " & CStr(IIf(Not IsNothing(partInfoData.Title), partInfoData.Title, partInfoData.Name)))

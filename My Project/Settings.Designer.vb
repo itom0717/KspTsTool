@@ -113,6 +113,18 @@ Namespace My
                 Me("IsTranslation") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+        Public Property UpdateRequired() As String
+            Get
+                Return CType(Me("UpdateRequired"),String)
+            End Get
+            Set
+                Me("UpdateRequired") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

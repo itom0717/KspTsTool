@@ -21,6 +21,14 @@ Public Class FormMain
   ''' <param name="e"></param>
   Private Sub FormMain_Load(sender As Object, e As EventArgs) Handles Me.Load
 
+
+    '旧バージョンの設定値を引き継ぐ
+    If My.Settings.UpdateRequired Then
+      My.Settings.Upgrade()
+      My.Settings.UpdateRequired = False
+      My.Settings.Save()
+    End If
+
     'フォームタイトル設定
     Me.Text = My.Application.Info.ProductName & " - Ver." & My.Application.Info.Version.ToString()
 

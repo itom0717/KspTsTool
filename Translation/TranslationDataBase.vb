@@ -446,6 +446,10 @@ Public Class TranslationDataBase
               'PARTの中に入った
               isPart = True
               isPartEnter = False
+
+
+              'スペースが含まれている場合は、？に変換されているので、?をスペースへ変換
+              part = part.Replace("?", " ")
             End If
           End If
 
