@@ -1,4 +1,4 @@
-このツールは旧バージョンです後継バージョンは[KspTsTool2](https://github.com/itom0717/KspTsTool2)です。
+##このツールは旧バージョンです。 後継バージョンは[KspTsTool2](https://github.com/itom0717/KspTsTool2)です。
 
 Kerbal Space Program Translation Support Tool
 ====
